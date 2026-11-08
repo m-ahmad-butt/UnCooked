@@ -1,15 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AdminNavbar from '../../components/AdminNavbar';
 import Pagination from '../../components/Pagination';
 import ConfirmModal from '../../components/ConfirmModal';
 import { adminAPI } from '../../utils/api';
 import { useGuide, useWarn } from '../../components/GuideModal';
-import { Plus, Pencil, Trash2, X, Loader2, Filter, Upload } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Filter, Upload } from 'lucide-react';
 import ImportSheet from '../../components/ImportSheet';
 
-const empty = { courseId: '', date: '', startTime: '', endTime: '', capacity: 30 };
-
 const AdminSlots = () => {
+  const navigate = useNavigate();
   const { say } = useGuide();
   const warn = useWarn();
   const [slots, setSlots] = useState([]);
@@ -18,10 +18,6 @@ const AdminSlots = () => {
   const [loading, setLoading] = useState(true);
   const [courses, setCourses] = useState([]);
   const [filterCourse, setFilterCourse] = useState('');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [form, setForm] = useState(empty);
-  const [editId, setEditId] = useState(null);
-  const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [importOpen, setImportOpen] = useState(false);
 
@@ -52,41 +48,6 @@ const AdminSlots = () => {
 
   useEffect(() => { load(); }, [load]);
 
-  const openAdd = () => { setForm(empty); setEditId(null); setModalOpen(true); };
-  const openEdit = (s) => {
-    setForm({
-      courseId: s.course?.id || s.course?._id || s.courseId || '',
-      date: s.date ? s.date.slice(0, 10) : '',
-      startTime: s.startTime || '',
-      endTime: s.endTime || '',
-      capacity: s.capacity || 30,
-    });
-    setEditId(s.id || s._id);
-    setModalOpen(true);
-  };
-  const closeModal = () => { setModalOpen(false); setForm(empty); setEditId(null); };
-
-  const handleSave = async (e) => {
-    e.preventDefault();
-    if (!form.courseId || !form.date || !form.startTime || !form.endTime) return warn('All fields are required');
-    setSaving(true);
-    try {
-      if (editId) {
-        await adminAPI.updateSlot(editId, form);
-        say({ title: 'Done', body: 'Slot updated', action: 'OK' });
-      } else {
-        await adminAPI.createSlot(form);
-        say({ title: 'Done', body: 'Slot created', action: 'OK' });
-      }
-      closeModal();
-      load();
-    } catch (err) {
-      warn(err.response?.data?.message || 'Failed to save');
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const handleDelete = async () => {
     if ((deleteTarget?.booked || 0) > 0) return warn('Cannot delete a slot that has bookings');
     try {
@@ -99,8 +60,6 @@ const AdminSlots = () => {
     }
   };
 
-  const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
-
   const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-PK', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '—';
 
   return (
@@ -111,7 +70,7 @@ const AdminSlots = () => {
           <h1 className="text-2xl font-bold tracking-tight">Exam Slots</h1>
           <div className="flex flex-wrap gap-2">
             <button onClick={() => setImportOpen(true)} className="n-btn-secondary"><Upload size={16} /> Upload</button>
-            <button onClick={openAdd} className="n-btn"><Plus size={16} /> Add Slot</button>
+            <button onClick={() => navigate('/admin/slots/new')} className="n-btn"><Plus size={16} /> Add Slot</button>
           </div>
         </div>
 
@@ -146,7 +105,7 @@ const AdminSlots = () => {
                       <td className="n-td">{s.capacity}</td>
                       <td className="n-td">{s.booked || 0}</td>
                       <td className="n-td text-right">
-                        <button onClick={() => openEdit(s)} className="n-btn-ghost p-1.5"><Pencil size={14} /></button>
+                        <button onClick={() => navigate(`/admin/slots/${s.id || s._id}/edit`)} className="n-btn-ghost p-1.5"><Pencil size={14} /></button>
                         <button onClick={() => setDeleteTarget(s)} className="n-btn-ghost p-1.5 text-notion-red" disabled={(s.booked || 0) > 0}><Trash2 size={14} /></button>
                       </td>
                     </tr>
@@ -162,7 +121,7 @@ const AdminSlots = () => {
                   <p className="text-xs text-notion-muted">{fmtDate(s.date)} · {s.startTime} – {s.endTime}</p>
                   <p className="text-xs text-notion-muted">Capacity: {s.capacity} · Booked: {s.booked || 0}</p>
                   <div className="mt-3 flex gap-2">
-                    <button onClick={() => openEdit(s)} className="n-btn-secondary py-1 px-2 text-xs"><Pencil size={12} /> Edit</button>
+                    <button onClick={() => navigate(`/admin/slots/${s.id || s._id}/edit`)} className="n-btn-secondary py-1 px-2 text-xs"><Pencil size={12} /> Edit</button>
                     <button onClick={() => setDeleteTarget(s)} className="n-btn-danger py-1 px-2 text-xs" disabled={(s.booked || 0) > 0}><Trash2 size={12} /> Delete</button>
                   </div>
                 </div>
@@ -173,37 +132,6 @@ const AdminSlots = () => {
           </>
         )}
       </div>
-
-      {modalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={closeModal} />
-          <div className="relative mx-4 w-full max-w-lg animate-in fade-in slide-in-from-bottom-2 rounded-notion-lg bg-white p-6 shadow-notion-lg">
-            <button onClick={closeModal} className="absolute right-4 top-4 text-notion-muted hover:text-notion-text"><X size={18} /></button>
-            <h2 className="mb-4 text-lg font-semibold">{editId ? 'Edit Slot' : 'Add Slot'}</h2>
-            <form onSubmit={handleSave} className="space-y-3">
-              <div>
-                <label className="n-label">Course *</label>
-                <select value={form.courseId} onChange={(e) => set('courseId', e.target.value)} className="n-input">
-                  <option value="">Select course…</option>
-                  {courses.map((c) => <option key={c.id || c._id} value={c.id || c._id}>{c.courseCode} — {c.title}</option>)}
-                </select>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div><label className="n-label">Date *</label><input type="date" value={form.date} onChange={(e) => set('date', e.target.value)} className="n-input" /></div>
-                <div><label className="n-label">Start Time *</label><input type="time" value={form.startTime} onChange={(e) => set('startTime', e.target.value)} className="n-input" /></div>
-                <div><label className="n-label">End Time *</label><input type="time" value={form.endTime} onChange={(e) => set('endTime', e.target.value)} className="n-input" /></div>
-              </div>
-              <div><label className="n-label">Capacity</label><input type="number" min="1" value={form.capacity} onChange={(e) => set('capacity', Number(e.target.value))} className="n-input" /></div>
-              <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={closeModal} className="n-btn-secondary">Cancel</button>
-                <button type="submit" disabled={saving} className="n-btn">
-                  {saving ? <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : editId ? 'Update' : 'Create'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       <ConfirmModal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title="Delete Slot" message="Are you sure you want to delete this exam slot?" confirmText="Delete" danger />
       {importOpen && (

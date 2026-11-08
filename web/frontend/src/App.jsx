@@ -6,10 +6,14 @@ import SetupPasswordPage from './pages/setupPassword';
 import ForgotPasswordPage from './pages/forgotPassword';
 import AdminDashboard from './pages/admin/dashboard';
 import AdminBranches from './pages/admin/branches';
+import AdminBranchForm from './pages/admin/branchForm';
 import AdminCourses from './pages/admin/courses';
+import AdminCourseForm from './pages/admin/courseForm';
 import AdminStudents from './pages/admin/students';
+import AdminStudentForm from './pages/admin/studentForm';
 import AdminStudentDetail from './pages/admin/studentDetail';
 import AdminSlots from './pages/admin/slots';
+import AdminSlotForm from './pages/admin/slotForm';
 import AdminRequests from './pages/admin/requests';
 import StudentSelectBranch from './pages/student/selectBranch';
 import StudentDashboard from './pages/student/dashboard';
@@ -29,10 +33,18 @@ function App() {
 
           <Route path="/admin" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/branches" element={<ProtectedRoute adminOnly><AdminBranches /></ProtectedRoute>} />
+          <Route path="/admin/branches/new" element={<ProtectedRoute adminOnly><AdminBranchForm /></ProtectedRoute>} />
+          <Route path="/admin/branches/:id/edit" element={<ProtectedRoute adminOnly><AdminBranchForm /></ProtectedRoute>} />
           <Route path="/admin/courses" element={<ProtectedRoute adminOnly><AdminCourses /></ProtectedRoute>} />
+          <Route path="/admin/courses/new" element={<ProtectedRoute adminOnly><AdminCourseForm /></ProtectedRoute>} />
+          <Route path="/admin/courses/:id/edit" element={<ProtectedRoute adminOnly><AdminCourseForm /></ProtectedRoute>} />
           <Route path="/admin/students" element={<ProtectedRoute adminOnly><AdminStudents /></ProtectedRoute>} />
+          <Route path="/admin/students/new" element={<ProtectedRoute adminOnly><AdminStudentForm /></ProtectedRoute>} />
+          <Route path="/admin/students/:id/edit" element={<ProtectedRoute adminOnly><AdminStudentForm /></ProtectedRoute>} />
           <Route path="/admin/students/:id" element={<ProtectedRoute adminOnly><AdminStudentDetail /></ProtectedRoute>} />
           <Route path="/admin/slots" element={<ProtectedRoute adminOnly><AdminSlots /></ProtectedRoute>} />
+          <Route path="/admin/slots/new" element={<ProtectedRoute adminOnly><AdminSlotForm /></ProtectedRoute>} />
+          <Route path="/admin/slots/:id/edit" element={<ProtectedRoute adminOnly><AdminSlotForm /></ProtectedRoute>} />
           <Route path="/admin/requests" element={<ProtectedRoute adminOnly><AdminRequests /></ProtectedRoute>} />
 
           <Route path="/student/select-branch" element={<ProtectedRoute studentOnly><StudentSelectBranch /></ProtectedRoute>} />

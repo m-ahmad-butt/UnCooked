@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AdminNavbar from '../../components/AdminNavbar';
 import Pagination from '../../components/Pagination';
 import ConfirmModal from '../../components/ConfirmModal';
 import { adminAPI } from '../../utils/api';
 import { useGuide, useWarn } from '../../components/GuideModal';
-import { Plus, Pencil, Trash2, Search, X, Loader2, Upload } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Loader2, Upload } from 'lucide-react';
 import ImportSheet from '../../components/ImportSheet';
 
 const DEPARTMENTS = [
@@ -17,12 +18,12 @@ const DEPARTMENTS = [
   'Electrical Engineering',
 ];
 
-const empty = { courseCode: '', title: '', creditHours: 3, department: 'Computer Science', difficulty: 'medium', status: 'active' };
 const isActive = (value) => String(value || '').toLowerCase() !== 'inactive';
 const statusLabel = (value) => (isActive(value) ? 'Active' : 'Inactive');
 const levelLabel = (value) => (value === 'easy' ? 'Easy' : value === 'hard' ? 'Hard' : 'Medium');
 
 const AdminCourses = () => {
+  const navigate = useNavigate();
   const { say } = useGuide();
   const warn = useWarn();
   const [courses, setCourses] = useState([]);
@@ -31,10 +32,6 @@ const AdminCourses = () => {
   const [search, setSearch] = useState('');
   const [department, setDepartment] = useState('');
   const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [form, setForm] = useState(empty);
-  const [editId, setEditId] = useState(null);
-  const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [importOpen, setImportOpen] = useState(false);
 
@@ -53,42 +50,6 @@ const AdminCourses = () => {
 
   useEffect(() => { load(); }, [load]);
 
-  const openAdd = () => { setForm(empty); setEditId(null); setModalOpen(true); };
-  const openEdit = (c) => {
-    setForm({
-      courseCode: c.courseCode,
-      title: c.title,
-      creditHours: c.creditHours || 3,
-      department: c.department || 'Computer Science',
-      difficulty: c.difficulty || 'medium',
-      status: isActive(c.status) ? 'active' : 'inactive',
-    });
-    setEditId(c.id || c._id);
-    setModalOpen(true);
-  };
-  const closeModal = () => { setModalOpen(false); setForm(empty); setEditId(null); };
-
-  const handleSave = async (e) => {
-    e.preventDefault();
-    if (!form.courseCode || !form.title) return warn('Course code and title are required');
-    setSaving(true);
-    try {
-      if (editId) {
-        await adminAPI.updateCourse(editId, form);
-        say({ title: 'Done', body: 'Course updated', action: 'OK' });
-      } else {
-        await adminAPI.createCourse(form);
-        say({ title: 'Done', body: 'Course created', action: 'OK' });
-      }
-      closeModal();
-      load();
-    } catch (err) {
-      warn(err.response?.data?.message || 'Failed to save');
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const handleDelete = async () => {
     try {
       await adminAPI.deleteCourse(deleteTarget.id || deleteTarget._id);
@@ -100,8 +61,6 @@ const AdminCourses = () => {
     }
   };
 
-  const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
-
   return (
     <div className="n-page">
       <AdminNavbar />
@@ -110,7 +69,7 @@ const AdminCourses = () => {
           <h1 className="text-2xl font-bold tracking-tight">Courses</h1>
           <div className="flex flex-wrap gap-2">
             <button onClick={() => setImportOpen(true)} className="n-btn-secondary"><Upload size={16} /> Upload</button>
-            <button onClick={openAdd} className="n-btn"><Plus size={16} /> Add Course</button>
+            <button onClick={() => navigate('/admin/courses/new')} className="n-btn"><Plus size={16} /> Add Course</button>
           </div>
         </div>
 
@@ -153,7 +112,7 @@ const AdminCourses = () => {
                         <span className={`n-tag ${isActive(c.status) ? 'bg-notion-green-soft text-notion-green' : 'bg-notion-red-soft text-notion-red'}`}>{statusLabel(c.status)}</span>
                       </td>
                       <td className="n-td text-right">
-                        <button onClick={() => openEdit(c)} className="n-btn-ghost p-1.5"><Pencil size={14} /></button>
+                        <button onClick={() => navigate(`/admin/courses/${c.id || c._id}/edit`)} className="n-btn-ghost p-1.5"><Pencil size={14} /></button>
                         <button onClick={() => setDeleteTarget(c)} className="n-btn-ghost p-1.5 text-notion-red"><Trash2 size={14} /></button>
                       </td>
                     </tr>
@@ -172,7 +131,7 @@ const AdminCourses = () => {
                   <p className="text-sm">{c.title}</p>
                   <p className="text-xs text-notion-muted">{c.creditHours} credit hours, {c.department}, {levelLabel(c.difficulty)}</p>
                   <div className="mt-3 flex gap-2">
-                    <button onClick={() => openEdit(c)} className="n-btn-secondary py-1 px-2 text-xs"><Pencil size={12} /> Edit</button>
+                    <button onClick={() => navigate(`/admin/courses/${c.id || c._id}/edit`)} className="n-btn-secondary py-1 px-2 text-xs"><Pencil size={12} /> Edit</button>
                     <button onClick={() => setDeleteTarget(c)} className="n-btn-danger py-1 px-2 text-xs"><Trash2 size={12} /> Delete</button>
                   </div>
                 </div>
@@ -183,49 +142,6 @@ const AdminCourses = () => {
           </>
         )}
       </div>
-
-      {modalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={closeModal} />
-          <div className="relative mx-4 w-full max-w-lg animate-in fade-in slide-in-from-bottom-2 rounded-notion-lg bg-white p-6 shadow-notion-lg">
-            <button onClick={closeModal} className="absolute right-4 top-4 text-notion-muted hover:text-notion-text"><X size={18} /></button>
-            <h2 className="mb-4 text-lg font-semibold">{editId ? 'Edit Course' : 'Add Course'}</h2>
-            <form onSubmit={handleSave} className="space-y-3">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div><label className="n-label">Course Code *</label><input value={form.courseCode} onChange={(e) => set('courseCode', e.target.value)} className="n-input" /></div>
-                <div><label className="n-label">Title *</label><input value={form.title} onChange={(e) => set('title', e.target.value)} className="n-input" /></div>
-                <div><label className="n-label">Credit Hours</label><input type="number" min="1" max="6" value={form.creditHours} onChange={(e) => set('creditHours', Number(e.target.value))} className="n-input" /></div>
-                <div>
-                  <label className="n-label">Department</label>
-                  <select value={form.department} onChange={(e) => set('department', e.target.value)} className="n-input">
-                    {DEPARTMENTS.map((name) => <option key={name} value={name}>{name}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="n-label">Level</label>
-                  <select value={form.difficulty} onChange={(e) => set('difficulty', e.target.value)} className="n-input">
-                    <option value="easy">Easy</option>
-                    <option value="medium">Medium</option>
-                    <option value="hard">Hard</option>
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label className="n-label">Status</label>
-                <select value={form.status} onChange={(e) => set('status', e.target.value)} className="n-input">
-                  <option value="active">Active</option><option value="inactive">Inactive</option>
-                </select>
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={closeModal} className="n-btn-secondary">Cancel</button>
-                <button type="submit" disabled={saving} className="n-btn">
-                  {saving ? <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : editId ? 'Update' : 'Create'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       <ConfirmModal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title="Delete Course" message={`Delete "${deleteTarget?.title}"? This cannot be undone.`} confirmText="Delete" danger />
       {importOpen && (

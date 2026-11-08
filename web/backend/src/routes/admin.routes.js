@@ -57,6 +57,7 @@ router.delete('/assignments/:id', requireAdmin, adminController.removeAssignment
 // Exam Slots
 router.get('/slots', requireAdmin, adminController.listSlots);
 router.post('/slots', requireAdmin, adminController.createSlot);
+router.get('/slots/:id', requireAdmin, adminController.getSlot);
 router.put('/slots/:id', requireAdmin, adminController.updateSlot);
 router.delete('/slots/:id', requireAdmin, adminController.deleteSlot);
 

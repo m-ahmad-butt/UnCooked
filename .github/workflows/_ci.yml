@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: Job to run (same manual play style as GitLab)
+        description: Job to run
         type: choice
         default: build-backend
         options:

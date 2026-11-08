@@ -93,6 +93,7 @@ export const adminAPI = {
   removeAssignment: (id) => api.delete(`/api/admin/assignments/${id}`),
 
   getSlots: (params) => api.get('/api/admin/slots', { params }),
+  getSlot: (id) => api.get(`/api/admin/slots/${id}`),
   createSlot: (data) => api.post('/api/admin/slots', data),
   updateSlot: (id, data) => api.put(`/api/admin/slots/${id}`, data),
   deleteSlot: (id) => api.delete(`/api/admin/slots/${id}`),

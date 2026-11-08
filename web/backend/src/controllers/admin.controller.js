@@ -10,6 +10,9 @@ const importService = require('../services/import.service');
 
 // ── Helpers ──
 
+const normalizeActiveStatus = (status) =>
+  String(status || 'active').toLowerCase() === 'inactive' ? 'inactive' : 'active';
+
 const paginate = async (Model, filter, { page = 1, pageSize = 10, sort = { createdAt: -1 }, populate = null }) => {
   page = Math.max(1, parseInt(page, 10) || 1);
   pageSize = Math.max(1, Math.min(100, parseInt(pageSize, 10) || 10));
@@ -52,7 +55,9 @@ const createBranch = async (req, res) => {
     if (!name || !code || !city) {
       return res.status(400).json({ message: 'name, code, and city are required' });
     }
-    const branch = await Branch.create({ name, code, city, address, contactNumber, status });
+    const branch = await Branch.create({
+      name, code, city, address, contactNumber, status: normalizeActiveStatus(status),
+    });
     res.status(201).json({ message: 'Branch created', data: formatDoc(branch) });
   } catch (error) {
     if (error.code === 11000) return res.status(400).json({ message: 'Branch code already exists' });
@@ -74,7 +79,9 @@ const getBranch = async (req, res) => {
 
 const updateBranch = async (req, res) => {
   try {
-    const branch = await Branch.findByIdAndUpdate(req.params.id, req.body, { new: true }).lean();
+    const updates = { ...req.body };
+    if (updates.status !== undefined) updates.status = normalizeActiveStatus(updates.status);
+    const branch = await Branch.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true }).lean();
     if (!branch) return res.status(404).json({ message: 'Branch not found' });
     res.status(200).json({ message: 'Branch updated', data: formatDoc(branch) });
   } catch (error) {
@@ -127,9 +134,8 @@ const createCourse = async (req, res) => {
       return res.status(400).json({ message: 'courseCode, title, and creditHours are required' });
     }
     const level = ['easy', 'medium', 'hard'].includes(difficulty) ? difficulty : 'medium';
-    const courseStatus = String(status || 'active').toLowerCase() === 'inactive' ? 'inactive' : 'active';
     const course = await Course.create({
-      courseCode, title, creditHours, department, difficulty: level, status: courseStatus,
+      courseCode, title, creditHours, department, difficulty: level, status: normalizeActiveStatus(status),
     });
     res.status(201).json({ message: 'Course created', data: formatDoc(course) });
   } catch (error) {
@@ -152,7 +158,12 @@ const getCourse = async (req, res) => {
 
 const updateCourse = async (req, res) => {
   try {
-    const course = await Course.findByIdAndUpdate(req.params.id, req.body, { new: true }).lean();
+    const updates = { ...req.body };
+    if (updates.status !== undefined) updates.status = normalizeActiveStatus(updates.status);
+    if (updates.difficulty !== undefined && !['easy', 'medium', 'hard'].includes(updates.difficulty)) {
+      updates.difficulty = 'medium';
+    }
+    const course = await Course.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true }).lean();
     if (!course) return res.status(404).json({ message: 'Course not found' });
     res.status(200).json({ message: 'Course updated', data: formatDoc(course) });
   } catch (error) {
@@ -424,6 +435,17 @@ const listSlots = async (req, res) => {
   }
 };
 
+const getSlot = async (req, res) => {
+  try {
+    const slot = await ExamSlot.findById(req.params.id).populate('course').lean();
+    if (!slot) return res.status(404).json({ message: 'Exam slot not found' });
+    res.status(200).json({ data: formatDoc(slot) });
+  } catch (error) {
+    console.error('getSlot error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 const createSlot = async (req, res) => {
   try {
     const { courseId, date, startTime, endTime, capacity } = req.body;
@@ -457,7 +479,25 @@ const createSlot = async (req, res) => {
 
 const updateSlot = async (req, res) => {
   try {
-    const slot = await ExamSlot.findByIdAndUpdate(req.params.id, req.body, { new: true }).lean();
+    const { courseId, date, startTime, endTime, capacity, ...rest } = req.body;
+    const updates = { ...rest };
+    if (courseId !== undefined) updates.course = courseId;
+    if (date !== undefined) updates.date = date;
+    if (startTime !== undefined) updates.startTime = startTime;
+    if (endTime !== undefined) updates.endTime = endTime;
+    if (capacity !== undefined) updates.capacity = capacity;
+
+    if (updates.course) {
+      const course = await Course.findById(updates.course);
+      if (!course) return res.status(404).json({ message: 'Course not found' });
+    }
+    if (updates.startTime && updates.endTime && updates.endTime <= updates.startTime) {
+      return res.status(400).json({ message: 'endTime must be after startTime' });
+    }
+
+    const slot = await ExamSlot.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true })
+      .populate('course')
+      .lean();
     if (!slot) return res.status(404).json({ message: 'Exam slot not found' });
     res.status(200).json({ message: 'Exam slot updated', data: formatDoc(slot) });
   } catch (error) {
@@ -762,7 +802,7 @@ module.exports = {
   listCourses, createCourse, getCourse, updateCourse, deleteCourse,
   listStudents, createStudent, getStudent, updateStudent, deleteStudent,
   getStudentAssignments, assignCourse, removeAssignment, bulkAssignCourses,
-  listSlots, createSlot, updateSlot, deleteSlot,
+  listSlots, getSlot, createSlot, updateSlot, deleteSlot,
   listRequests, handleRequest,
   getDashboardStats,
   ocrCnic,

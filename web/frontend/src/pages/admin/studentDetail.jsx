@@ -4,7 +4,7 @@ import AdminNavbar from '../../components/AdminNavbar';
 import ConfirmModal from '../../components/ConfirmModal';
 import { adminAPI } from '../../utils/api';
 import { useGuide, useWarn } from '../../components/GuideModal';
-import { ArrowLeft, Plus, Trash2, Loader2, X, AlertTriangle, KeyRound, ScanLine, Upload } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Loader2, AlertTriangle, KeyRound, Upload } from 'lucide-react';
 import ImportSheet from '../../components/ImportSheet';
 
 const AdminStudentDetail = () => {
@@ -16,21 +16,17 @@ const AdminStudentDetail = () => {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [courses, setCourses] = useState([]);
-  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState('');
   const [assigning, setAssigning] = useState(false);
   const [removeTarget, setRemoveTarget] = useState(null);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editForm, setEditForm] = useState({});
-  const [editSaving, setEditSaving] = useState(false);
-  const [ocrLoading, setOcrLoading] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
 
   const loadStudent = useCallback(async () => {
     try {
       const { data } = await adminAPI.getStudent(id);
-      const student = data.data || data.student || data;
-      setStudent(student && student.fullName ? student : null);
+      const next = data.data || data.student || data;
+      setStudent(next && next.fullName ? next : null);
     } catch {
       warn('Failed to load student');
       navigate('/admin/students');
@@ -56,7 +52,7 @@ const AdminStudentDetail = () => {
     init();
   }, [loadStudent, loadAssignments]);
 
-  const openAssignModal = async () => {
+  const openAssign = async () => {
     try {
       const { data } = await adminAPI.getCourses({ pageSize: 100 });
       const rows = data.data || data.courses || [];
@@ -65,7 +61,7 @@ const AdminStudentDetail = () => {
       warn('Failed to load courses');
     }
     setSelectedCourse('');
-    setAssignModalOpen(true);
+    setAssignOpen(true);
   };
 
   const handleAssign = async () => {
@@ -74,7 +70,7 @@ const AdminStudentDetail = () => {
     try {
       await adminAPI.assignCourse({ studentId: id, courseId: selectedCourse });
       say({ title: 'Done', body: 'Course assigned', action: 'OK' });
-      setAssignModalOpen(false);
+      setAssignOpen(false);
       loadAssignments();
     } catch (err) {
       warn(err.response?.data?.message || 'Failed to assign');
@@ -91,70 +87,6 @@ const AdminStudentDetail = () => {
       loadAssignments();
     } catch (err) {
       warn(err.response?.data?.message || 'Failed to remove');
-    }
-  };
-
-  const openEditModal = () => {
-    setEditForm({
-      fullName: student.fullName || '',
-      phone: student.phone || '',
-      cnic: student.cnic || '',
-      dob: student.dob ? student.dob.slice(0, 10) : '',
-      gender: student.gender || '',
-      address: student.address || '',
-      fatherName: student.fatherName || '',
-      parentCnic: student.parentCnic || '',
-      parentOccupation: student.parentOccupation || '',
-      parentContact: student.parentContact || '',
-      emergencyContact: student.emergencyContact || '',
-      program: student.program || '',
-      semester: student.semester || '',
-      session: student.session || '',
-    });
-    setEditModalOpen(true);
-  };
-
-  const handleEditSave = async (e) => {
-    e.preventDefault();
-    setEditSaving(true);
-    try {
-      await adminAPI.updateStudent(id, editForm);
-      say({ title: 'Done', body: 'Student updated', action: 'OK' });
-      setEditModalOpen(false);
-      loadStudent();
-    } catch (err) {
-      warn(err.response?.data?.message || 'Failed to update');
-    } finally {
-      setEditSaving(false);
-    }
-  };
-
-  const setE = (k, v) => setEditForm((p) => ({ ...p, [k]: v }));
-
-  const handleCnicUpload = async (e) => {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (!file) return;
-    setOcrLoading(true);
-    try {
-      const form = new FormData();
-      form.append('cnic', file);
-      const { data } = await adminAPI.ocrCnic(form);
-      const fields = data.data || data;
-      setEditForm((p) => ({
-        ...p,
-        fullName: fields.fullName || p.fullName,
-        fatherName: fields.fatherName || p.fatherName,
-        cnic: fields.cnic || p.cnic,
-        dob: fields.dob ? String(fields.dob).slice(0, 10) : p.dob,
-        gender: fields.gender || p.gender,
-        address: fields.address || p.address,
-      }));
-      say({ title: 'Done', body: 'CNIC fields filled. Review them, then save.', action: 'OK' });
-    } catch (err) {
-      warn(err.response?.data?.message || 'CNIC OCR failed');
-    } finally {
-      setOcrLoading(false);
     }
   };
 
@@ -175,9 +107,9 @@ const AdminStudentDetail = () => {
     <div className="n-page">
       <AdminNavbar />
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-        <div className="mb-6 flex items-center gap-3">
+        <div className="mb-6 flex flex-wrap items-center gap-3">
           <button onClick={() => navigate('/admin/students')} className="n-btn-ghost p-2"><ArrowLeft size={18} /></button>
-          <div className="flex-1">
+          <div className="flex-1 min-w-[12rem]">
             <h1 className="text-2xl font-bold tracking-tight">{student.fullName}</h1>
             <p className="text-sm text-notion-muted">{student.registrationNumber} · {student.email}</p>
           </div>
@@ -202,7 +134,7 @@ const AdminStudentDetail = () => {
           >
             <KeyRound size={16} /> Reset password
           </button>
-          <button onClick={openEditModal} className="n-btn-secondary">Edit</button>
+          <button onClick={() => navigate(`/admin/students/${id}/edit`)} className="n-btn-secondary">Edit</button>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3 mb-8">
@@ -240,7 +172,6 @@ const AdminStudentDetail = () => {
           </div>
         </div>
 
-        {/* Course Assignments */}
         <div className="n-card p-5">
           <div className="mb-4 flex items-center justify-between">
             <div>
@@ -249,7 +180,7 @@ const AdminStudentDetail = () => {
             </div>
             <div className="flex gap-2">
               <button onClick={() => setImportOpen(true)} className="n-btn-secondary text-xs"><Upload size={14} /> Upload CSV</button>
-              <button onClick={openAssignModal} disabled={count >= 6} className="n-btn text-xs"><Plus size={14} /> Assign Course</button>
+              <button onClick={openAssign} disabled={count >= 6} className="n-btn text-xs"><Plus size={14} /> Assign Course</button>
             </div>
           </div>
 
@@ -263,6 +194,27 @@ const AdminStudentDetail = () => {
           <div className="w-full mb-2 h-2 rounded-full bg-notion-surface overflow-hidden">
             <div className={`h-full rounded-full transition-all ${count >= 4 && count <= 6 ? 'bg-notion-green' : count < 4 ? 'bg-notion-yellow' : 'bg-notion-red'}`} style={{ width: `${Math.min((count / 6) * 100, 100)}%` }} />
           </div>
+
+          {assignOpen && (
+            <div className="mb-4 rounded-notion border border-notion-border bg-notion-surface p-4">
+              <h4 className="mb-3 text-sm font-semibold">Assign a course</h4>
+              <select value={selectedCourse} onChange={(e) => setSelectedCourse(e.target.value)} className="n-input mb-3">
+                <option value="">Select a course…</option>
+                {courses.filter((c) => !assignedIds.includes(String(c.id || c._id))).map((c) => (
+                  <option key={c.id || c._id} value={c.id || c._id}>{c.courseCode} — {c.title}</option>
+                ))}
+              </select>
+              {courses.length === 0 && (
+                <p className="mb-3 text-xs text-notion-muted">No courses in the catalog yet. Upload them on the Courses page first.</p>
+              )}
+              <div className="flex justify-end gap-2">
+                <button onClick={() => setAssignOpen(false)} className="n-btn-secondary">Cancel</button>
+                <button onClick={handleAssign} disabled={assigning || !selectedCourse} className="n-btn">
+                  {assigning ? <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : 'Assign'}
+                </button>
+              </div>
+            </div>
+          )}
 
           {assignments.length === 0 ? (
             <p className="py-6 text-center text-sm text-notion-muted">No courses assigned yet</p>
@@ -282,79 +234,6 @@ const AdminStudentDetail = () => {
         </div>
       </div>
 
-      {/* Assign Course Modal */}
-      {assignModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setAssignModalOpen(false)} />
-          <div className="relative mx-4 w-full max-w-md animate-in fade-in slide-in-from-bottom-2 rounded-notion-lg bg-white p-6 shadow-notion-lg">
-            <button onClick={() => setAssignModalOpen(false)} className="absolute right-4 top-4 text-notion-muted hover:text-notion-text"><X size={18} /></button>
-            <h2 className="mb-4 text-lg font-semibold">Assign Course</h2>
-            <button type="button" onClick={() => setImportOpen(true)} className="n-btn-secondary mb-4 w-full text-xs">
-              <Upload size={14} /> Upload registered courses
-            </button>
-            <select value={selectedCourse} onChange={(e) => setSelectedCourse(e.target.value)} className="n-input mb-4">
-              <option value="">Select a course…</option>
-              {courses.filter((c) => !assignedIds.includes(c.id || c._id)).map((c) => (
-                <option key={c.id || c._id} value={c.id || c._id}>{c.courseCode} — {c.title}</option>
-              ))}
-            </select>
-            {courses.length === 0 && (
-              <p className="mb-4 text-xs text-notion-muted">No courses in the catalog yet. Upload them on the Courses page first, then upload registered courses here.</p>
-            )}
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setAssignModalOpen(false)} className="n-btn-secondary">Cancel</button>
-              <button onClick={handleAssign} disabled={assigning || !selectedCourse} className="n-btn">
-                {assigning ? <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : 'Assign'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Student Modal */}
-      {editModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setEditModalOpen(false)} />
-          <div className="relative mx-4 w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in fade-in slide-in-from-bottom-2 rounded-notion-lg bg-white p-6 shadow-notion-lg">
-            <button onClick={() => setEditModalOpen(false)} className="absolute right-4 top-4 text-notion-muted hover:text-notion-text"><X size={18} /></button>
-            <h2 className="mb-4 text-lg font-semibold">Edit Student</h2>
-            <form onSubmit={handleEditSave} className="space-y-3">
-              <div className="flex flex-wrap items-center gap-2 rounded-notion border border-dashed border-notion-border bg-notion-surface p-3">
-                <ScanLine size={16} className="text-notion-muted" />
-                <span className="text-sm text-notion-muted">Upload a CNIC photo to fill name, father, number, date of birth, gender, and address</span>
-                <label className="n-btn-secondary cursor-pointer text-xs">
-                  {ocrLoading ? <Loader2 size={14} className="animate-spin" /> : 'Upload CNIC'}
-                  <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" disabled={ocrLoading} onChange={handleCnicUpload} />
-                </label>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div><label className="n-label">Full Name</label><input value={editForm.fullName} onChange={(e) => setE('fullName', e.target.value)} className="n-input" /></div>
-                <div><label className="n-label">Phone</label><input value={editForm.phone} onChange={(e) => setE('phone', e.target.value)} className="n-input" /></div>
-                <div><label className="n-label">CNIC</label><input value={editForm.cnic} onChange={(e) => setE('cnic', e.target.value)} className="n-input" /></div>
-                <div><label className="n-label">DOB</label><input type="date" value={editForm.dob} onChange={(e) => setE('dob', e.target.value)} className="n-input" /></div>
-                <div><label className="n-label">Gender</label>
-                  <select value={editForm.gender} onChange={(e) => setE('gender', e.target.value)} className="n-input">
-                    <option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option>
-                  </select>
-                </div>
-                <div><label className="n-label">Program</label><input value={editForm.program} onChange={(e) => setE('program', e.target.value)} className="n-input" /></div>
-                <div><label className="n-label">Semester</label><input value={editForm.semester} onChange={(e) => setE('semester', e.target.value)} className="n-input" /></div>
-                <div><label className="n-label">Session</label><input value={editForm.session} onChange={(e) => setE('session', e.target.value)} className="n-input" /></div>
-                <div><label className="n-label">Father's Name</label><input value={editForm.fatherName} onChange={(e) => setE('fatherName', e.target.value)} className="n-input" /></div>
-                <div><label className="n-label">Parent Contact</label><input value={editForm.parentContact} onChange={(e) => setE('parentContact', e.target.value)} className="n-input" /></div>
-              </div>
-              <div><label className="n-label">Address</label><input value={editForm.address} onChange={(e) => setE('address', e.target.value)} className="n-input" /></div>
-              <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setEditModalOpen(false)} className="n-btn-secondary">Cancel</button>
-                <button type="submit" disabled={editSaving} className="n-btn">
-                  {editSaving ? <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : 'Save Changes'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
       <ConfirmModal isOpen={!!removeTarget} onClose={() => setRemoveTarget(null)} onConfirm={handleRemove} title="Remove Assignment" message={`Remove "${removeTarget?.course?.title || removeTarget?.courseTitle}" from this student?`} confirmText="Remove" danger />
       {importOpen && (
         <ImportSheet
@@ -362,7 +241,7 @@ const AdminStudentDetail = () => {
           onClose={() => setImportOpen(false)}
           onDone={(result) => {
             setImportOpen(false);
-            setAssignModalOpen(false);
+            setAssignOpen(false);
             say({ title: 'Import finished', body: `Added ${result.created || 0}. Skipped ${result.skipped || 0}.`, action: 'OK' });
             loadAssignments();
           }}
