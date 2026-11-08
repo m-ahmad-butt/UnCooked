@@ -17,7 +17,7 @@ rsync -a --delete \
   --exclude '*.pyc' \
   "${ROOT_DIR}/" "${DEPLOY_DIR}/"
 
-echo "==> Write env files from GitLab File variables"
+echo "==> Write env files from CI secrets"
 cp "${BACKEND_ENV}" "${DEPLOY_DIR}/backend/.env"
 cp "${FRONTEND_ENV}" "${DEPLOY_DIR}/frontend/.env"
 cp "${AGENT_ENV}" "${DEPLOY_DIR}/agent/.env"

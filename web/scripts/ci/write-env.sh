@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copy GitLab File variables into the compose env files. Run from web/.
+# Copy CI File/secret env paths into the compose env files. Run from web/.
 set -euo pipefail
 
 copy_env() {

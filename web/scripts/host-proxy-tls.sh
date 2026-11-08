@@ -11,7 +11,7 @@ CERTBOT_EMAIL="${CERTBOT_EMAIL:-}"
 DUCKDNS_TOKEN="${DUCKDNS_TOKEN:-}"
 
 if [ -z "${CERTBOT_EMAIL}" ]; then
-  echo "Set CERTBOT_EMAIL (GitLab CI variable or env) for Let's Encrypt registration." >&2
+  echo "Set CERTBOT_EMAIL (GitHub Actions secret or env) for Let's Encrypt registration." >&2
   exit 1
 fi
 

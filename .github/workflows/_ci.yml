@@ -1,0 +1,425 @@
+name: CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Job to run (same manual play style as GitLab)
+        type: choice
+        default: build-backend
+        options:
+          - build-backend
+          - build-frontend
+          - build-agent
+          - build-all
+          - test-unit
+          - test-smoke
+          - test-all
+          - deploy-staging
+          - deploy-production
+          - init-staging
+          - init-production
+          - restart-staging
+          - restart-production
+          - truncate-staging
+          - truncate-production
+          - pipeline-staging
+
+env:
+  COMPOSE_FILE: docker-compose.prod.yml
+  COMPOSE_CI_FILE: docker-compose.ci.yml
+  COMPOSE_PROJECT_NAME: web-comp
+  DEPLOY_DIR: /opt/web-comp
+  DOMAIN: web-comp.duckdns.org
+  STAGING_DOMAIN: web-comp-stage.duckdns.org
+
+defaults:
+  run:
+    working-directory: web
+    shell: bash
+
+jobs:
+  build-backend:
+    if: >-
+      inputs.action == 'build-backend' ||
+      inputs.action == 'build-all' ||
+      inputs.action == 'test-all' ||
+      inputs.action == 'pipeline-staging'
+    runs-on: [self-hosted, web-staging]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Materialize env secrets
+        env:
+          BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
+          FRONTEND_ENV_CONTENT: ${{ secrets.FRONTEND_ENV }}
+          AGENT_ENV_CONTENT: ${{ secrets.AGENT_ENV }}
+          BACKEND_ENV_STAGING_CONTENT: ${{ secrets.BACKEND_ENV_STAGING }}
+          FRONTEND_ENV_STAGING_CONTENT: ${{ secrets.FRONTEND_ENV_STAGING }}
+          AGENT_ENV_STAGING_CONTENT: ${{ secrets.AGENT_ENV_STAGING }}
+        run: bash scripts/ci/gha-materialize-env.sh
+      - name: Build backend
+        run: |
+          chmod +x scripts/ci/*.sh scripts/*.sh 2>/dev/null || true
+          bash scripts/ci/write-env.sh
+          docker compose -f "$COMPOSE_FILE" --env-file backend/.env --env-file frontend/.env --env-file agent/.env build backend
+
+  build-frontend:
+    if: >-
+      inputs.action == 'build-frontend' ||
+      inputs.action == 'build-all' ||
+      inputs.action == 'pipeline-staging'
+    runs-on: [self-hosted, web-staging]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Materialize env secrets
+        env:
+          BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
+          FRONTEND_ENV_CONTENT: ${{ secrets.FRONTEND_ENV }}
+          AGENT_ENV_CONTENT: ${{ secrets.AGENT_ENV }}
+          BACKEND_ENV_STAGING_CONTENT: ${{ secrets.BACKEND_ENV_STAGING }}
+          FRONTEND_ENV_STAGING_CONTENT: ${{ secrets.FRONTEND_ENV_STAGING }}
+          AGENT_ENV_STAGING_CONTENT: ${{ secrets.AGENT_ENV_STAGING }}
+        run: bash scripts/ci/gha-materialize-env.sh
+      - name: Build frontend
+        run: |
+          chmod +x scripts/ci/*.sh scripts/*.sh 2>/dev/null || true
+          bash scripts/ci/write-env.sh
+          docker compose -f "$COMPOSE_FILE" --env-file backend/.env --env-file frontend/.env --env-file agent/.env build frontend
+
+  build-agent:
+    if: >-
+      inputs.action == 'build-agent' ||
+      inputs.action == 'build-all' ||
+      inputs.action == 'test-all' ||
+      inputs.action == 'pipeline-staging'
+    runs-on: [self-hosted, web-staging]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Materialize env secrets
+        env:
+          BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
+          FRONTEND_ENV_CONTENT: ${{ secrets.FRONTEND_ENV }}
+          AGENT_ENV_CONTENT: ${{ secrets.AGENT_ENV }}
+          BACKEND_ENV_STAGING_CONTENT: ${{ secrets.BACKEND_ENV_STAGING }}
+          FRONTEND_ENV_STAGING_CONTENT: ${{ secrets.FRONTEND_ENV_STAGING }}
+          AGENT_ENV_STAGING_CONTENT: ${{ secrets.AGENT_ENV_STAGING }}
+        run: bash scripts/ci/gha-materialize-env.sh
+      - name: Build agent
+        run: |
+          chmod +x scripts/ci/*.sh scripts/*.sh 2>/dev/null || true
+          bash scripts/ci/write-env.sh
+          docker compose -f "$COMPOSE_FILE" --env-file backend/.env --env-file frontend/.env --env-file agent/.env build agent
+
+  test-unit:
+    needs: [build-backend]
+    if: >-
+      always() && !cancelled() && (
+        inputs.action == 'test-unit' ||
+        ((inputs.action == 'test-all' || inputs.action == 'pipeline-staging') &&
+         needs.build-backend.result == 'success')
+      )
+    runs-on: [self-hosted, web-staging]
+    env:
+      COMPOSE_PROJECT_NAME: web-comp-ci
+    steps:
+      - uses: actions/checkout@v4
+      - name: Materialize env secrets
+        env:
+          BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
+          FRONTEND_ENV_CONTENT: ${{ secrets.FRONTEND_ENV }}
+          AGENT_ENV_CONTENT: ${{ secrets.AGENT_ENV }}
+          BACKEND_ENV_STAGING_CONTENT: ${{ secrets.BACKEND_ENV_STAGING }}
+          FRONTEND_ENV_STAGING_CONTENT: ${{ secrets.FRONTEND_ENV_STAGING }}
+          AGENT_ENV_STAGING_CONTENT: ${{ secrets.AGENT_ENV_STAGING }}
+        run: bash scripts/ci/gha-materialize-env.sh
+      - name: Unit tests
+        run: |
+          bash scripts/ci/write-env.sh
+          docker compose -f "$COMPOSE_FILE" -f "$COMPOSE_CI_FILE" --env-file backend/.env --env-file frontend/.env --env-file agent/.env run --rm --no-deps backend npm run test:unit
+
+  test-smoke:
+    needs: [build-backend, build-agent]
+    if: >-
+      always() && !cancelled() && (
+        inputs.action == 'test-smoke' ||
+        ((inputs.action == 'test-all' || inputs.action == 'pipeline-staging') &&
+         needs.build-backend.result == 'success' && needs.build-agent.result == 'success')
+      )
+    runs-on: [self-hosted, web-staging]
+    env:
+      COMPOSE_PROJECT_NAME: web-comp-ci
+    steps:
+      - uses: actions/checkout@v4
+      - name: Materialize env secrets
+        env:
+          BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
+          FRONTEND_ENV_CONTENT: ${{ secrets.FRONTEND_ENV }}
+          AGENT_ENV_CONTENT: ${{ secrets.AGENT_ENV }}
+          BACKEND_ENV_STAGING_CONTENT: ${{ secrets.BACKEND_ENV_STAGING }}
+          FRONTEND_ENV_STAGING_CONTENT: ${{ secrets.FRONTEND_ENV_STAGING }}
+          AGENT_ENV_STAGING_CONTENT: ${{ secrets.AGENT_ENV_STAGING }}
+        run: bash scripts/ci/gha-materialize-env.sh
+      - name: Smoke tests
+        run: |
+          set -e
+          bash scripts/ci/write-env.sh
+          COMPOSE="docker compose -p web-comp-ci -f $COMPOSE_FILE -f $COMPOSE_CI_FILE --env-file backend/.env --env-file frontend/.env --env-file agent/.env"
+          health() { docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$1" 2>/dev/null || echo missing; }
+          mongo_ping() { docker exec ci-mongodb mongosh --quiet --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)' >/dev/null 2>&1; }
+          redis_ping() { docker exec ci-redis redis-cli -a 123123123 ping 2>/dev/null | grep -q PONG; }
+          rabbit_ping() { docker exec ci-rabbitmq rabbitmq-diagnostics -q ping >/dev/null 2>&1; }
+          $COMPOSE up -d mongodb redis rabbitmq
+          echo "Waiting for mongodb/redis/rabbitmq (ping)..."
+          for i in $(seq 1 60); do
+            mongo_h=$(health ci-mongodb)
+            redis_h=$(health ci-redis)
+            rabbit_h=$(health ci-rabbitmq)
+            mongo_ok=0; redis_ok=0; rabbit_ok=0
+            mongo_ping && mongo_ok=1
+            redis_ping && redis_ok=1
+            rabbit_ping && rabbit_ok=1
+            echo "  [$i] mongo=$mongo_h/ping=$mongo_ok redis=$redis_h/ping=$redis_ok rabbitmq=$rabbit_h/ping=$rabbit_ok"
+            if [ "$mongo_ok" = "1" ] && [ "$redis_ok" = "1" ] && [ "$rabbit_ok" = "1" ]; then
+              echo "Dependencies ready"
+              break
+            fi
+            if [ "$i" -eq 60 ]; then
+              echo "Dependencies failed readiness checks"
+              $COMPOSE ps
+              docker logs --tail=100 ci-mongodb || true
+              docker logs --tail=50 ci-redis || true
+              docker logs --tail=50 ci-rabbitmq || true
+              exit 1
+            fi
+            sleep 2
+          done
+          $COMPOSE up -d backend
+          echo "Waiting for backend /health (in-network)..."
+          for i in $(seq 1 60); do
+            if $COMPOSE exec -T backend node -e "require('http').get('http://127.0.0.1:3001/health',r=>{let d='';r.on('data',c=>d+=c);r.on('end',()=>process.exit(r.statusCode===200?0:1))}).on('error',()=>process.exit(1))"; then
+              echo "Backend is healthy"
+              break
+            fi
+            sleep 2
+            if [ "$i" -eq 60 ]; then
+              echo "Backend health check failed"
+              docker logs --tail=120 ci-backend || true
+              docker logs --tail=80 ci-agent || true
+              exit 1
+            fi
+          done
+          $COMPOSE run --rm --no-deps -e SMOKE_BASE_URL=http://backend:3001 backend npm run test:smoke
+      - name: Tear down CI stack
+        if: always()
+        run: |
+          docker compose -p web-comp-ci -f "$COMPOSE_FILE" -f "$COMPOSE_CI_FILE" --env-file backend/.env --env-file frontend/.env --env-file agent/.env down --remove-orphans -v || true
+
+  deploy-staging:
+    needs: [test-unit, test-smoke]
+    if: >-
+      always() && !cancelled() && (
+        inputs.action == 'deploy-staging' ||
+        (inputs.action == 'pipeline-staging' &&
+         needs.test-unit.result == 'success' && needs.test-smoke.result == 'success')
+      )
+    runs-on: [self-hosted, web-staging]
+    environment:
+      name: staging
+      url: https://web-comp-stage.duckdns.org
+    env:
+      APP_ENV: staging
+      DOMAIN: web-comp-stage.duckdns.org
+      COMPOSE_PROJECT_NAME: web-comp-stage
+      DEPLOY_DIR: /opt/web-comp-stage
+    steps:
+      - uses: actions/checkout@v4
+      - name: Materialize env secrets
+        env:
+          BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
+          FRONTEND_ENV_CONTENT: ${{ secrets.FRONTEND_ENV }}
+          AGENT_ENV_CONTENT: ${{ secrets.AGENT_ENV }}
+          BACKEND_ENV_STAGING_CONTENT: ${{ secrets.BACKEND_ENV_STAGING }}
+          FRONTEND_ENV_STAGING_CONTENT: ${{ secrets.FRONTEND_ENV_STAGING }}
+          AGENT_ENV_STAGING_CONTENT: ${{ secrets.AGENT_ENV_STAGING }}
+        run: bash scripts/ci/gha-materialize-env.sh
+      - name: Deploy staging
+        run: |
+          chmod +x scripts/ci/*.sh scripts/*.sh 2>/dev/null || true
+          bash scripts/ci/deploy.sh
+
+  deploy-production:
+    if: inputs.action == 'deploy-production'
+    runs-on: [self-hosted, web-production]
+    environment:
+      name: production
+      url: https://web-comp.duckdns.org
+    env:
+      APP_ENV: production
+      COMPOSE_PROJECT_NAME: web-comp
+      DEPLOY_DIR: /opt/web-comp
+    steps:
+      - uses: actions/checkout@v4
+      - name: Materialize env secrets
+        env:
+          BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
+          FRONTEND_ENV_CONTENT: ${{ secrets.FRONTEND_ENV }}
+          AGENT_ENV_CONTENT: ${{ secrets.AGENT_ENV }}
+        run: bash scripts/ci/gha-materialize-env.sh
+      - name: Deploy production
+        run: |
+          chmod +x scripts/ci/*.sh scripts/*.sh 2>/dev/null || true
+          bash scripts/ci/deploy.sh
+
+  init-staging:
+    if: inputs.action == 'init-staging'
+    runs-on: [self-hosted, web-staging]
+    environment:
+      name: staging
+      url: https://web-comp-stage.duckdns.org
+    env:
+      APP_ENV: staging
+      DOMAIN: web-comp-stage.duckdns.org
+      COMPOSE_PROJECT_NAME: web-comp-stage
+      DEPLOY_DIR: /opt/web-comp-stage
+      CERTBOT_EMAIL: ${{ secrets.CERTBOT_EMAIL }}
+      DUCKDNS_TOKEN: ${{ secrets.DUCKDNS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Materialize env secrets
+        env:
+          BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
+          FRONTEND_ENV_CONTENT: ${{ secrets.FRONTEND_ENV }}
+          AGENT_ENV_CONTENT: ${{ secrets.AGENT_ENV }}
+          BACKEND_ENV_STAGING_CONTENT: ${{ secrets.BACKEND_ENV_STAGING }}
+          FRONTEND_ENV_STAGING_CONTENT: ${{ secrets.FRONTEND_ENV_STAGING }}
+          AGENT_ENV_STAGING_CONTENT: ${{ secrets.AGENT_ENV_STAGING }}
+        run: bash scripts/ci/gha-materialize-env.sh
+      - name: Init staging
+        run: |
+          chmod +x scripts/ci/*.sh scripts/*.sh 2>/dev/null || true
+          bash scripts/ci/init.sh
+
+  init-production:
+    if: inputs.action == 'init-production'
+    runs-on: [self-hosted, web-production]
+    environment:
+      name: production
+      url: https://web-comp.duckdns.org
+    env:
+      APP_ENV: production
+      COMPOSE_PROJECT_NAME: web-comp
+      DEPLOY_DIR: /opt/web-comp
+      CERTBOT_EMAIL: ${{ secrets.CERTBOT_EMAIL }}
+      DUCKDNS_TOKEN: ${{ secrets.DUCKDNS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Materialize env secrets
+        env:
+          BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
+          FRONTEND_ENV_CONTENT: ${{ secrets.FRONTEND_ENV }}
+          AGENT_ENV_CONTENT: ${{ secrets.AGENT_ENV }}
+        run: bash scripts/ci/gha-materialize-env.sh
+      - name: Init production
+        run: |
+          chmod +x scripts/ci/*.sh scripts/*.sh 2>/dev/null || true
+          bash scripts/ci/init.sh
+
+  restart-staging:
+    if: inputs.action == 'restart-staging'
+    runs-on: [self-hosted, web-staging]
+    environment:
+      name: staging
+      url: https://web-comp-stage.duckdns.org
+    env:
+      APP_ENV: staging
+      DOMAIN: web-comp-stage.duckdns.org
+      COMPOSE_PROJECT_NAME: web-comp-stage
+      DEPLOY_DIR: /opt/web-comp-stage
+    steps:
+      - uses: actions/checkout@v4
+      - name: Materialize env secrets
+        env:
+          BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
+          FRONTEND_ENV_CONTENT: ${{ secrets.FRONTEND_ENV }}
+          AGENT_ENV_CONTENT: ${{ secrets.AGENT_ENV }}
+          BACKEND_ENV_STAGING_CONTENT: ${{ secrets.BACKEND_ENV_STAGING }}
+          FRONTEND_ENV_STAGING_CONTENT: ${{ secrets.FRONTEND_ENV_STAGING }}
+          AGENT_ENV_STAGING_CONTENT: ${{ secrets.AGENT_ENV_STAGING }}
+        run: bash scripts/ci/gha-materialize-env.sh
+      - name: Restart staging
+        run: |
+          chmod +x scripts/ci/*.sh scripts/*.sh 2>/dev/null || true
+          bash scripts/ci/restart.sh
+
+  restart-production:
+    if: inputs.action == 'restart-production'
+    runs-on: [self-hosted, web-production]
+    environment:
+      name: production
+      url: https://web-comp.duckdns.org
+    env:
+      APP_ENV: production
+      COMPOSE_PROJECT_NAME: web-comp
+      DEPLOY_DIR: /opt/web-comp
+    steps:
+      - uses: actions/checkout@v4
+      - name: Materialize env secrets
+        env:
+          BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
+          FRONTEND_ENV_CONTENT: ${{ secrets.FRONTEND_ENV }}
+          AGENT_ENV_CONTENT: ${{ secrets.AGENT_ENV }}
+        run: bash scripts/ci/gha-materialize-env.sh
+      - name: Restart production
+        run: |
+          chmod +x scripts/ci/*.sh scripts/*.sh 2>/dev/null || true
+          bash scripts/ci/restart.sh
+
+  truncate-staging:
+    if: inputs.action == 'truncate-staging'
+    runs-on: [self-hosted, web-staging]
+    environment:
+      name: staging
+      url: https://web-comp-stage.duckdns.org
+    env:
+      APP_ENV: staging
+      DOMAIN: web-comp-stage.duckdns.org
+      COMPOSE_PROJECT_NAME: web-comp-stage
+      DEPLOY_DIR: /opt/web-comp-stage
+    steps:
+      - uses: actions/checkout@v4
+      - name: Materialize env secrets
+        env:
+          BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
+          FRONTEND_ENV_CONTENT: ${{ secrets.FRONTEND_ENV }}
+          AGENT_ENV_CONTENT: ${{ secrets.AGENT_ENV }}
+          BACKEND_ENV_STAGING_CONTENT: ${{ secrets.BACKEND_ENV_STAGING }}
+          FRONTEND_ENV_STAGING_CONTENT: ${{ secrets.FRONTEND_ENV_STAGING }}
+          AGENT_ENV_STAGING_CONTENT: ${{ secrets.AGENT_ENV_STAGING }}
+        run: bash scripts/ci/gha-materialize-env.sh
+      - name: Truncate staging
+        run: |
+          chmod +x scripts/ci/*.sh scripts/*.sh 2>/dev/null || true
+          bash scripts/ci/truncate.sh
+
+  truncate-production:
+    if: inputs.action == 'truncate-production'
+    runs-on: [self-hosted, web-production]
+    environment:
+      name: production
+      url: https://web-comp.duckdns.org
+    env:
+      APP_ENV: production
+      COMPOSE_PROJECT_NAME: web-comp
+      DEPLOY_DIR: /opt/web-comp
+    steps:
+      - uses: actions/checkout@v4
+      - name: Materialize env secrets
+        env:
+          BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
+          FRONTEND_ENV_CONTENT: ${{ secrets.FRONTEND_ENV }}
+          AGENT_ENV_CONTENT: ${{ secrets.AGENT_ENV }}
+        run: bash scripts/ci/gha-materialize-env.sh
+      - name: Truncate production
+        run: |
+          chmod +x scripts/ci/*.sh scripts/*.sh 2>/dev/null || true
+          bash scripts/ci/truncate.sh

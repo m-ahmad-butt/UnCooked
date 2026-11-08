@@ -17,7 +17,7 @@ fi
 
 # Probe a command already allowed by install-runner-sudoers.sh (bare `true` is not).
 if ! sudo -n /usr/bin/tee --help >/dev/null 2>&1; then
-  echo "gitlab-runner needs passwordless sudo for init (nginx/certbot)." >&2
+  echo "GitHub Actions runner needs passwordless sudo for init (nginx/certbot)." >&2
   echo "On the EC2 server run once (SSH as ubuntu):" >&2
   echo "  sudo bash ${DEPLOY_DIR}/scripts/ci/install-runner-sudoers.sh" >&2
   exit 1
