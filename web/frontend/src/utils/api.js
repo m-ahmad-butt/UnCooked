@@ -65,6 +65,7 @@ export const adminAPI = {
   deleteCourse: (id) => api.delete(`/api/admin/courses/${id}`),
 
   getStudents: (params) => api.get('/api/admin/students', { params }),
+  checkStudentFields: (params) => api.get('/api/admin/students/check', { params }),
   createStudent: (data) => api.post('/api/admin/students', data),
   ocrCnic: (formData) =>
     api.post('/api/admin/students/ocr-cnic', formData, {

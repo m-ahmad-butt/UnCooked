@@ -98,10 +98,10 @@ const AdminStudents = () => {
                 <tbody>
                   {students.map((s) => (
                     <tr key={s.id || s._id} className="hover:bg-notion-surface/50 transition-colors cursor-pointer" onClick={() => navigate(`/admin/students/${s.id || s._id}`)}>
-                      <td className="n-td font-medium">{s.registrationNumber}</td>
+                      <td className="n-td font-medium">{s.registrationNumber || 'Not set'}</td>
                       <td className="n-td">{s.fullName}</td>
                       <td className="n-td text-notion-muted">{s.email}</td>
-                      <td className="n-td">{s.program}</td>
+                      <td className="n-td">{s.program || 'Not set'}</td>
                       <td className="n-td">{s.semester || 'Not set'}</td>
                       <td className="n-td">{s.branch?.name || 'Not set'}</td>
                       <td className="n-td">
@@ -129,8 +129,8 @@ const AdminStudents = () => {
                       {s.dateSheetSaved ? 'Saved' : 'Pending'}
                     </span>
                   </div>
-                  <p className="text-xs text-notion-muted">{s.registrationNumber} · {s.email}</p>
-                  <p className="text-xs text-notion-muted">{s.program}, semester {s.semester || 'not set'}, {s.branch?.name || 'no branch'}</p>
+                  <p className="text-xs text-notion-muted">{s.registrationNumber || 'No reg no'} · {s.email}</p>
+                  <p className="text-xs text-notion-muted">{s.program || 'No program'}, semester {s.semester || 'not set'}, {s.branch?.name || 'no branch'}</p>
                   <div className="mt-3 flex gap-2" onClick={(e) => e.stopPropagation()}>
                     <button onClick={() => setDeleteTarget(s)} className="n-btn-danger py-1 px-2 text-xs"><Trash2 size={12} /> Delete</button>
                   </div>

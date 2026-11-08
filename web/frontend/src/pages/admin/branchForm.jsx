@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AdminNavbar from '../../components/AdminNavbar';
 import AdminFormFrame from '../../components/AdminFormFrame';
+import PhoneInput from '../../components/PhoneInput';
 import { adminAPI } from '../../utils/api';
 import { useGuide, useWarn } from '../../components/GuideModal';
+import { phoneError } from '../../utils/validators';
 
 const empty = { name: '', code: '', city: '', address: '', contactNumber: '', status: 'active' };
 const isActive = (value) => String(value || '').toLowerCase() !== 'inactive';
@@ -50,6 +52,8 @@ const AdminBranchForm = () => {
   const handleSave = async (e) => {
     e.preventDefault();
     if (!form.name || !form.code || !form.city) return warn('Name, code, and city are required');
+    const phoneErr = phoneError(form.contactNumber);
+    if (phoneErr) return warn(phoneErr);
     setSaving(true);
     try {
       if (isEdit) {
@@ -80,7 +84,7 @@ const AdminBranchForm = () => {
             <div><label className="n-label">Name *</label><input value={form.name} onChange={(e) => set('name', e.target.value)} className="n-input" /></div>
             <div><label className="n-label">Code *</label><input value={form.code} onChange={(e) => set('code', e.target.value)} className="n-input" /></div>
             <div><label className="n-label">City *</label><input value={form.city} onChange={(e) => set('city', e.target.value)} className="n-input" /></div>
-            <div><label className="n-label">Contact Number</label><input value={form.contactNumber} onChange={(e) => set('contactNumber', e.target.value)} className="n-input" /></div>
+            <div><label className="n-label">Contact Number</label><PhoneInput value={form.contactNumber} onChange={(v) => set('contactNumber', v)} /></div>
           </div>
           <div><label className="n-label">Address</label><input value={form.address} onChange={(e) => set('address', e.target.value)} className="n-input" /></div>
           <div>

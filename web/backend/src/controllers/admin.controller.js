@@ -215,6 +215,43 @@ const listStudents = async (req, res) => {
   }
 };
 
+const checkStudentFields = async (req, res) => {
+  try {
+    const email = req.query.email ? String(req.query.email).trim() : '';
+    const registrationNumber = req.query.registrationNumber
+      ? String(req.query.registrationNumber).trim()
+      : '';
+    const excludeId = req.query.excludeId ? String(req.query.excludeId).trim() : '';
+
+    if (!email && !registrationNumber) {
+      return res.status(400).json({ message: 'email or registrationNumber is required' });
+    }
+
+    if (email) {
+      const clash = await User.findOne({ email });
+      if (clash && String(clash._id) !== excludeId) {
+        return res.status(200).json({ ok: false, field: 'email', message: 'Email already exists' });
+      }
+    }
+
+    if (registrationNumber) {
+      const clash = await User.findOne({ registrationNumber });
+      if (clash && String(clash._id) !== excludeId) {
+        return res.status(200).json({
+          ok: false,
+          field: 'registrationNumber',
+          message: 'Registration number already exists',
+        });
+      }
+    }
+
+    res.status(200).json({ ok: true });
+  } catch (error) {
+    console.error('checkStudentFields error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 const createStudent = async (req, res) => {
   try {
     const {
@@ -227,9 +264,15 @@ const createStudent = async (req, res) => {
     if (!email || !fullName) {
       return res.status(400).json({ message: 'email and fullName are required' });
     }
+    if (!registrationNumber || !String(registrationNumber).trim()) {
+      return res.status(400).json({ message: 'registrationNumber is required' });
+    }
 
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ message: 'Email already exists' });
+
+    const regClash = await User.findOne({ registrationNumber: String(registrationNumber).trim() });
+    if (regClash) return res.status(400).json({ message: 'Registration number already exists' });
 
     // Same as CSV import: hold a pending password for "Send passwords" — no setup-email / temp login.
     const plain = importService.issueStudentPassword();
@@ -796,7 +839,7 @@ const commitImport = async (req, res) => {
 module.exports = {
   listBranches, createBranch, getBranch, updateBranch, deleteBranch,
   listCourses, createCourse, getCourse, updateCourse, deleteCourse,
-  listStudents, createStudent, getStudent, updateStudent, deleteStudent,
+  listStudents, checkStudentFields, createStudent, getStudent, updateStudent, deleteStudent,
   getStudentAssignments, assignCourse, removeAssignment, bulkAssignCourses,
   listSlots, getSlot, createSlot, updateSlot, deleteSlot,
   listRequests, handleRequest,

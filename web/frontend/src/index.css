@@ -111,11 +111,11 @@
   }
 
   .n-th {
-    @apply px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-notion-muted;
+    @apply px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-notion-muted align-middle;
   }
 
   .n-td {
-    @apply border-t border-notion-border px-4 py-3 text-sm text-notion-text;
+    @apply border-t border-notion-border px-4 py-3 text-sm text-notion-text align-middle;
   }
 }
 
