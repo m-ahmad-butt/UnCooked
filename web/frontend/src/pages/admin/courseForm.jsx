@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AdminNavbar from '../../components/AdminNavbar';
+import AdminFormFrame from '../../components/AdminFormFrame';
 import { adminAPI } from '../../utils/api';
 import { useGuide, useWarn } from '../../components/GuideModal';
-import { ArrowLeft, Loader2 } from 'lucide-react';
 
 const DEPARTMENTS = [
   'Computer Science',
@@ -80,51 +80,46 @@ const AdminCourseForm = () => {
   return (
     <div className="n-page">
       <AdminNavbar />
-      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
-        <div className="mb-6 flex items-center gap-3">
-          <button type="button" onClick={() => navigate('/admin/courses')} className="n-btn-ghost p-2"><ArrowLeft size={18} /></button>
-          <h1 className="text-2xl font-bold tracking-tight">{isEdit ? 'Edit Course' : 'Add Course'}</h1>
-        </div>
-
-        {loading ? (
-          <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-notion-muted" /></div>
-        ) : (
-          <form onSubmit={handleSave} className="n-card space-y-4 p-6">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div><label className="n-label">Course Code *</label><input value={form.courseCode} onChange={(e) => set('courseCode', e.target.value)} className="n-input" /></div>
-              <div><label className="n-label">Title *</label><input value={form.title} onChange={(e) => set('title', e.target.value)} className="n-input" /></div>
-              <div><label className="n-label">Credit Hours</label><input type="number" min="1" max="6" value={form.creditHours} onChange={(e) => set('creditHours', Number(e.target.value))} className="n-input" /></div>
-              <div>
-                <label className="n-label">Department</label>
-                <select value={form.department} onChange={(e) => set('department', e.target.value)} className="n-input">
-                  {DEPARTMENTS.map((name) => <option key={name} value={name}>{name}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="n-label">Level</label>
-                <select value={form.difficulty} onChange={(e) => set('difficulty', e.target.value)} className="n-input">
-                  <option value="easy">Easy</option>
-                  <option value="medium">Medium</option>
-                  <option value="hard">Hard</option>
-                </select>
-              </div>
-              <div>
-                <label className="n-label">Status</label>
-                <select value={form.status} onChange={(e) => set('status', e.target.value)} className="n-input">
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
+      <AdminFormFrame
+        title={isEdit ? 'Edit Course' : 'Add Course'}
+        onBack={() => navigate('/admin/courses')}
+        loading={loading}
+      >
+        <form onSubmit={handleSave} className="space-y-5">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div><label className="n-label">Course Code *</label><input value={form.courseCode} onChange={(e) => set('courseCode', e.target.value)} className="n-input" /></div>
+            <div><label className="n-label">Title *</label><input value={form.title} onChange={(e) => set('title', e.target.value)} className="n-input" /></div>
+            <div><label className="n-label">Credit Hours</label><input type="number" min="1" max="6" value={form.creditHours} onChange={(e) => set('creditHours', Number(e.target.value))} className="n-input" /></div>
+            <div>
+              <label className="n-label">Department</label>
+              <select value={form.department} onChange={(e) => set('department', e.target.value)} className="n-input">
+                {DEPARTMENTS.map((name) => <option key={name} value={name}>{name}</option>)}
+              </select>
             </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <button type="button" onClick={() => navigate('/admin/courses')} className="n-btn-secondary">Cancel</button>
-              <button type="submit" disabled={saving} className="n-btn">
-                {saving ? <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : isEdit ? 'Update' : 'Create'}
-              </button>
+            <div>
+              <label className="n-label">Level</label>
+              <select value={form.difficulty} onChange={(e) => set('difficulty', e.target.value)} className="n-input">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
             </div>
-          </form>
-        )}
-      </div>
+            <div>
+              <label className="n-label">Status</label>
+              <select value={form.status} onChange={(e) => set('status', e.target.value)} className="n-input">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <button type="button" onClick={() => navigate('/admin/courses')} className="n-btn-secondary">Cancel</button>
+            <button type="submit" disabled={saving} className="n-btn">
+              {saving ? <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : isEdit ? 'Update' : 'Create'}
+            </button>
+          </div>
+        </form>
+      </AdminFormFrame>
     </div>
   );
 };

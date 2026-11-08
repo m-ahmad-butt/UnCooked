@@ -231,31 +231,27 @@ const createStudent = async (req, res) => {
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ message: 'Email already exists' });
 
-    const token = crypto.randomBytes(32).toString('hex');
-    const expiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    const tempPassword = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 10);
-
+    // Same as CSV import: hold a pending password for "Send passwords" — no setup-email / temp login.
+    const plain = importService.issueStudentPassword();
     const student = await User.create({
       email, fullName, phone, cnic, dob, gender, address,
       fatherName, parentCnic, parentOccupation, parentContact, emergencyContact,
       registrationNumber, program, semester, session,
       previousQualification, previousInstitute, previousMarks,
-      password: tempPassword,
+      password: await bcrypt.hash(plain, 10),
+      pendingPassword: plain,
+      passwordSent: false,
       role: 'STUDENT',
-      isVerified: false,
-      passwordSetupToken: token,
-      passwordSetupExpiry: expiry,
+      isVerified: true,
+      passwordSetupToken: null,
+      passwordSetupExpiry: null,
     });
 
-    const setupLink = `${process.env.FRONTEND_URL}/setup-password/${token}`;
-    try {
-      await emailService.sendPasswordSetup(email, fullName, setupLink);
-    } catch (err) {
-      console.error('[Email] Password setup email failed:', err.message);
-    }
-
-    const { password, passwordSetupToken, passwordSetupExpiry, ...safe } = formatDoc(student);
-    res.status(201).json({ message: 'Student created', data: safe });
+    const { password, passwordSetupToken, passwordSetupExpiry, pendingPassword, ...safe } = formatDoc(student);
+    res.status(201).json({
+      message: 'Student created. Use Send passwords to email their login.',
+      data: safe,
+    });
   } catch (error) {
     if (error.code === 11000) return res.status(400).json({ message: 'Duplicate field value (email or registration number)' });
     console.error('createStudent error:', error);

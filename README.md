@@ -29,7 +29,7 @@ UnCooked shortens that loop: declare AWS infrastructure, configure hosts and run
 
 | Pillar | Objective |
 |--------|-----------|
-| **Provision** | Terraform on **AWS** (EC2 blue/green, EIPs, S3, security groups) |
+| **Provision** | Terraform on **AWS** (EC2 stage/production, EIPs, S3, security groups) |
 | **Configure** | **Ansible**-driven host bootstrap (Docker, runners, nginx, TLS) |
 | **Contain** | **Docker** / Compose for app, MongoDB, Redis, RabbitMQ, agent |
 | **Orchestrate** | **Kubernetes** path for portable scheduling and scaling |

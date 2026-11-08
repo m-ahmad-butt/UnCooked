@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AdminNavbar from '../../components/AdminNavbar';
+import AdminFormFrame from '../../components/AdminFormFrame';
 import { adminAPI } from '../../utils/api';
 import { useGuide, useWarn } from '../../components/GuideModal';
-import { ArrowLeft, Loader2 } from 'lucide-react';
 
 const empty = { courseId: '', date: '', startTime: '', endTime: '', capacity: 30 };
 
@@ -73,38 +73,33 @@ const AdminSlotForm = () => {
   return (
     <div className="n-page">
       <AdminNavbar />
-      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
-        <div className="mb-6 flex items-center gap-3">
-          <button type="button" onClick={() => navigate('/admin/slots')} className="n-btn-ghost p-2"><ArrowLeft size={18} /></button>
-          <h1 className="text-2xl font-bold tracking-tight">{isEdit ? 'Edit Slot' : 'Add Slot'}</h1>
-        </div>
-
-        {loading ? (
-          <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-notion-muted" /></div>
-        ) : (
-          <form onSubmit={handleSave} className="n-card space-y-4 p-6">
-            <div>
-              <label className="n-label">Course *</label>
-              <select value={form.courseId} onChange={(e) => set('courseId', e.target.value)} className="n-input">
-                <option value="">Select course…</option>
-                {courses.map((c) => <option key={c.id || c._id} value={c.id || c._id}>{c.courseCode} — {c.title}</option>)}
-              </select>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div><label className="n-label">Date *</label><input type="date" value={form.date} onChange={(e) => set('date', e.target.value)} className="n-input" /></div>
-              <div><label className="n-label">Start Time *</label><input type="time" value={form.startTime} onChange={(e) => set('startTime', e.target.value)} className="n-input" /></div>
-              <div><label className="n-label">End Time *</label><input type="time" value={form.endTime} onChange={(e) => set('endTime', e.target.value)} className="n-input" /></div>
-            </div>
-            <div><label className="n-label">Capacity</label><input type="number" min="1" value={form.capacity} onChange={(e) => set('capacity', Number(e.target.value))} className="n-input" /></div>
-            <div className="flex justify-end gap-2 pt-2">
-              <button type="button" onClick={() => navigate('/admin/slots')} className="n-btn-secondary">Cancel</button>
-              <button type="submit" disabled={saving} className="n-btn">
-                {saving ? <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : isEdit ? 'Update' : 'Create'}
-              </button>
-            </div>
-          </form>
-        )}
-      </div>
+      <AdminFormFrame
+        title={isEdit ? 'Edit Slot' : 'Add Slot'}
+        onBack={() => navigate('/admin/slots')}
+        loading={loading}
+      >
+        <form onSubmit={handleSave} className="space-y-5">
+          <div>
+            <label className="n-label">Course *</label>
+            <select value={form.courseId} onChange={(e) => set('courseId', e.target.value)} className="n-input">
+              <option value="">Select course…</option>
+              {courses.map((c) => <option key={c.id || c._id} value={c.id || c._id}>{c.courseCode} — {c.title}</option>)}
+            </select>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div><label className="n-label">Date *</label><input type="date" value={form.date} onChange={(e) => set('date', e.target.value)} className="n-input" /></div>
+            <div><label className="n-label">Start Time *</label><input type="time" value={form.startTime} onChange={(e) => set('startTime', e.target.value)} className="n-input" /></div>
+            <div><label className="n-label">End Time *</label><input type="time" value={form.endTime} onChange={(e) => set('endTime', e.target.value)} className="n-input" /></div>
+          </div>
+          <div><label className="n-label">Capacity</label><input type="number" min="1" value={form.capacity} onChange={(e) => set('capacity', Number(e.target.value))} className="n-input" /></div>
+          <div className="flex justify-end gap-2 pt-2">
+            <button type="button" onClick={() => navigate('/admin/slots')} className="n-btn-secondary">Cancel</button>
+            <button type="submit" disabled={saving} className="n-btn">
+              {saving ? <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : isEdit ? 'Update' : 'Create'}
+            </button>
+          </div>
+        </form>
+      </AdminFormFrame>
     </div>
   );
 };
