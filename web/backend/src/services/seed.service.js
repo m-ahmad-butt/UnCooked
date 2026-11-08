@@ -2,33 +2,51 @@ const bcrypt = require('bcryptjs');
 const { User, Branch, Course, CourseAssignment, ExamSlot } = require('../models');
 
 const seedAdmin = async () => {
-  const email = 'admin@vu.edu.pk';
-  const hashed = await bcrypt.hash('demo', 10);
-  const existing = await User.findOne({
-    $or: [{ email }, { email: 'admin@examslot.com' }, { role: 'ADMIN' }],
-  });
+  const email = 'm.ahmad.software.engineer@gmail.com';
+  const hashed = await bcrypt.hash('123123123', 10);
 
-  if (existing) {
-    if (process.env.NODE_ENV !== 'production') {
-      existing.email = email;
-      existing.password = hashed;
-    }
-    existing.fullName = existing.fullName || 'VU Admin';
-    existing.role = 'ADMIN';
-    existing.isVerified = true;
-    await existing.save();
-    console.log(`[SEED] Admin kept: ${existing.email}`);
-    return;
-  } else {
-    await User.create({
-      email,
-      fullName: 'VU Admin',
-      password: hashed,
-      role: 'ADMIN',
-      isVerified: true,
+  // Prefer the account that already owns this email (avoid unique-index clash).
+  let admin = await User.findOne({ email });
+  if (!admin) {
+    admin = await User.findOne({
+      $or: [{ email: 'admin@vu.edu.pk' }, { email: 'admin@examslot.com' }, { role: 'ADMIN' }],
     });
-    console.log(`[SEED] Admin created: ${email}`);
   }
+
+  if (admin) {
+    if (admin.email !== email) {
+      const clash = await User.findOne({ email });
+      if (clash && String(clash._id) !== String(admin._id)) {
+        clash.password = hashed;
+        clash.fullName = clash.fullName || 'Ahmad';
+        clash.role = 'ADMIN';
+        clash.isVerified = true;
+        await clash.save();
+        if (admin.role === 'ADMIN') {
+          await User.deleteOne({ _id: admin._id });
+        }
+        console.log(`[SEED] Admin set: ${email}`);
+        return;
+      }
+      admin.email = email;
+    }
+    admin.password = hashed;
+    admin.fullName = admin.fullName || 'Ahmad';
+    admin.role = 'ADMIN';
+    admin.isVerified = true;
+    await admin.save();
+    console.log(`[SEED] Admin kept: ${admin.email}`);
+    return;
+  }
+
+  await User.create({
+    email,
+    fullName: 'Ahmad',
+    password: hashed,
+    role: 'ADMIN',
+    isVerified: true,
+  });
+  console.log(`[SEED] Admin created: ${email}`);
 };
 
 const seedBranches = async () => {
@@ -83,8 +101,8 @@ const seedCourses = async () => {
 const seedStudents = async () => {
   const hashed = await bcrypt.hash('demo', 10);
 
+  // Do NOT remap onto the admin email — that demotes ADMIN on every seed.
   const rename = [
-    ['student1@examslot.com', 'm.ahmad.software.engineer@gmail.com'],
     ['student2@examslot.com', 'payment.io.social@gmail.com'],
   ];
   for (const [from, to] of rename) {
@@ -94,7 +112,7 @@ const seedStudents = async () => {
 
   const students = [
     {
-      email: 'm.ahmad.software.engineer@gmail.com', fullName: 'Muhammad Ahmad', phone: '0300-1234567', cnic: '35201-1234567-1',
+      email: 'student1@examslot.com', fullName: 'Ahmed Khan', phone: '0300-1234567', cnic: '35201-1234567-1',
       dob: new Date('2002-05-15'), gender: 'Male', address: '123 Main St, Lahore',
       fatherName: 'Muhammad Khan', parentCnic: '35201-7654321-1', parentOccupation: 'Engineer', parentContact: '0300-7654321', emergencyContact: '0301-1234567',
       registrationNumber: 'FA20-BCS-001', program: 'BS Computer Science', semester: '5th', session: 'Fall 2020',
@@ -147,7 +165,7 @@ const seedAssignmentsAndSlots = async () => {
   courses.forEach((c) => { courseMap[c.courseCode] = c._id; });
 
   const assignmentMap = {
-    'm.ahmad.software.engineer@gmail.com': ['CS101', 'CS201', 'CS301', 'CS401', 'MT101'],
+    'student1@examslot.com': ['CS101', 'CS201', 'CS301', 'CS401', 'MT101'],
     'payment.io.social@gmail.com': ['CS101', 'CS201', 'MT101', 'MT201', 'EE101'],
     'student3@examslot.com': ['CS301', 'CS401', 'CS501', 'MT201', 'EE101', 'CS201'],
     'student4@examslot.com': ['CS101', 'MT101', 'MT201', 'EE101'],

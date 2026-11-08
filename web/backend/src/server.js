@@ -30,6 +30,7 @@ app.use(cors({
   origin: [
     'http://localhost', 'http://localhost:80',
     'http://localhost:5173', 'http://localhost:5174',
+    'http://localhost:8080', 'http://localhost:8082',
     process.env.FRONTEND_URL,
   ].filter(Boolean),
   credentials: true,

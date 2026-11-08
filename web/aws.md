@@ -2,17 +2,17 @@
 
 Host nginx / TLS is done by CI `init:*` — not here.
 
-| Item | Staging (blue) | Production (green) |
+| Item | Staging | Production  |
 |------|----------------|--------------------|
-| EIP | `3.108.49.218` | `3.7.93.239` |
+| EIP | `13.206.228.118` | `3.6.107.156` |
 | Deploy dir | `/opt/web-comp-stage` | `/opt/web-comp` |
 | Runner tag | `web-staging` | `web-production` |
 | Domain | `web-comp-stage.duckdns.org` | `web-comp.duckdns.org` |
 | SSH key | `terraform/server-web.pem` | same |
 
 ```powershell
-.\ssh-stage.ps1    # staging
-.\ssh.ps1          # production
+.\ssh.ps1    # staging
+.\ssh-p.ps1          # production
 ```
 
 ---
