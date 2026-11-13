@@ -78,6 +78,26 @@ Screenshot:
   images/P0/issues/ (Snyk High/Critical summary run)
 
 
+----------------------------------------
+5) Snyk — job 08 failed again (multer Critical)
+----------------------------------------
+Issue:
+  SNYK-JS-MULTER-10299878 Uncaught Exception [CRITICAL] in multer@1.4.5-lts.2
+  Plus more High findings tied to multer 1.x (empty field name crash / DoS).
+  Summary: 1 Critical, 12 High.
+
+Fix:
+  Upgrade multer 1.4.5-lts.2 → 2.5.0 (API still memoryStorage + fileFilter;
+  admin.routes.js unchanged).
+
+Commit message (local — push yourself):
+  fix(deps): upgrade multer to 2.5.0 for Snyk critical
+
+Files:
+  web/backend/package.json
+  web/backend/package-lock.json
+
+
 Accepted (not fail-threshold): see SECURITY.md
   exceljs → uuid     Moderate  no non-breaking fix
   react-router-dom   Moderate  v7 is breaking; stay on v6 for now
