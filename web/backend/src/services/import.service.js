@@ -435,4 +435,16 @@ const commitImport = async (kind, rows) => {
 
 const issueStudentPassword = () => makePassword();
 
-module.exports = { previewImport, commitImport, issueStudentPassword, KINDS };
+module.exports = {
+  previewImport,
+  commitImport,
+  issueStudentPassword,
+  KINDS,
+  // test helpers
+  keyOf,
+  cellText,
+  pick,
+  difficultyOf,
+  statusOf,
+  previewRow,
+};
