@@ -234,5 +234,20 @@ Commit message (push yourself):
   fix(docker): use nginx-unprivileged 1.31.7-alpine (valid Hub tag)
 
 
+15) Trivy backend — HIGH in image-bundled npm
+Issue:
+  Trivy found HIGH in node:22-alpine bundled npm tree
+  (brace-expansion, pacote, picomatch, sigstore, ip-address)
+  under usr/local/lib/node_modules/npm — not app dependencies.
+  Fixes exist but live inside Node image's npm CLI.
+
+Fix:
+  Remove npm/npx/corepack from final runtime image (app runs
+  `node src/server.js` only). Keep npm only in deps build stage.
+
+Commit message (push yourself):
+  fix(docker): strip npm from backend runtime for Trivy
+
+
 Accepted (not fail-threshold): see SECURITY.md
   exceljs -> uuid     Moderate  no non-breaking fix
