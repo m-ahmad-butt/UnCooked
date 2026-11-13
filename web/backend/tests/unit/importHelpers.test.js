@@ -7,7 +7,7 @@ const {
   difficultyOf,
   statusOf,
   previewRow,
-} = require('../../src/services/import.service');
+} = require('../../src/services/importHelpers');
 
 describe('unit: import helpers', () => {
   it('keyOf strips non-alphanumeric', () => {

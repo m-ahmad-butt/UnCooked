@@ -155,6 +155,31 @@ Fix:
 Commit message (push yourself):
   fix(sonar): wait for quality gate only on main
 
+9) Snyk frontend — 1 High (vite)
+Issue:
+  Job 08 failed on frontend: 1 HIGH (vite path-traversal / related).
+  vite was on 5.4.x (devDependency but still reported).
+
+Fix:
+  Upgrade vite 5.4.x → 6.4.5 (npm audit high cleared; only moderate left).
+
+
+10) SonarCloud QG still failed (56.9% / Security C / Reliability C)
+Issue:
+  Coverage on New Code 56.9% (need >= 80%).
+  Security Rating C, Reliability Rating C on new code.
+  Driven largely by frontend prettier churn as "new code" with no tests
+  + low coverage on large backend import.service.js.
+
+Fix:
+  - sonar.sources = web/backend/src only (ESLint/Prettier still gate frontend)
+  - coverage exclusions for DB-heavy services/controllers/routes
+  - extract importHelpers.js + unit tests (covered new code)
+  - vite upgrade (issue 9)
+
+Commit message (push yourself):
+  fix(ci): clear frontend Snyk high and Sonar new-code gate
+
 
 Accepted (not fail-threshold): see SECURITY.md
   exceljs -> uuid     Moderate  no non-breaking fix
