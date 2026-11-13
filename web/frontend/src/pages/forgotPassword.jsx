@@ -52,7 +52,9 @@ const ForgotPasswordPage = () => {
                 <Mail size={24} className="text-notion-text" />
               </div>
               <h1 className="text-2xl font-bold tracking-tight">Forgot password?</h1>
-              <p className="mt-1 text-sm text-notion-muted">Enter your email and we'll send a reset link</p>
+              <p className="mt-1 text-sm text-notion-muted">
+                Enter your email and we'll send a reset link
+              </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -79,7 +81,8 @@ const ForgotPasswordPage = () => {
 
             <p className="mt-6 text-center text-xs text-notion-muted">
               <Link to="/login" className="font-medium text-notion-text hover:underline">
-                <ArrowLeft size={12} className="mr-1 inline" />Back to login
+                <ArrowLeft size={12} className="mr-1 inline" />
+                Back to login
               </Link>
             </p>
           </>

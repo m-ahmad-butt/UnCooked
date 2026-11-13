@@ -3,7 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { studentAPI, unwrap } from '../utils/api';
 import { useGuide, useWarn } from './GuideModal';
 import {
-  Loader2, Send, RotateCcw, Check, X, MessageCircle, ChevronDown, Sparkles, ArrowRight,
+  Loader2,
+  Send,
+  RotateCcw,
+  Check,
+  X,
+  MessageCircle,
+  ChevronDown,
+  Sparkles,
+  ArrowRight,
 } from 'lucide-react';
 
 const PREF_CHIPS = [
@@ -77,12 +85,18 @@ const AgentPanel = ({ open, onClose }) => {
         if (cancelled) return;
 
         if (p.dateSheetSaved) {
-          push('assistant', 'Your date sheet is already saved. Open Date Sheet to view it, or use Need Help to request a change.');
+          push(
+            'assistant',
+            'Your date sheet is already saved. Open Date Sheet to view it, or use Need Help to request a change.'
+          );
           setBooted(true);
           return;
         }
         if (!p.selectedBranch && !p.branch) {
-          push('assistant', 'Select an exam branch first. Then open the agent again and I can build your date sheet.');
+          push(
+            'assistant',
+            'Select an exam branch first. Then open the agent again and I can build your date sheet.'
+          );
           setBooted(true);
           return;
         }
@@ -90,7 +104,11 @@ const AgentPanel = ({ open, onClose }) => {
         const { data } = await studentAPI.agentChat({ message: 'hello', preferences: [] });
         if (cancelled) return;
         const payload = unwrap(data);
-        push('assistant', payload.reply || 'Ask me to build your exam date sheet. Pick preferences below, then send.');
+        push(
+          'assistant',
+          payload.reply ||
+            'Ask me to build your exam date sheet. Pick preferences below, then send.'
+        );
         setPhase(payload.phase || '');
         if (payload.proposedRows) {
           setProposal(payload.proposedRows);
@@ -109,7 +127,9 @@ const AgentPanel = ({ open, onClose }) => {
     };
 
     boot();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [open, booted, warn]);
 
   const togglePref = (id) => {
@@ -148,7 +168,11 @@ const AgentPanel = ({ open, onClose }) => {
       if (action === 'accept' && (payload.proposedSelections || proposedSelections)) {
         const map = payload.proposedSelections || proposedSelections;
         await studentAPI.agentApply({ selections: map });
-        say({ title: 'Date sheet saved', body: 'The agent plan was applied to your date sheet.', action: 'OK' });
+        say({
+          title: 'Date sheet saved',
+          body: 'The agent plan was applied to your date sheet.',
+          action: 'OK',
+        });
         onClose();
         navigate('/student/datesheet');
       }
@@ -232,9 +256,7 @@ const AgentPanel = ({ open, onClose }) => {
             >
               <div
                 className={`max-w-[92%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
-                  m.role === 'user'
-                    ? 'bg-[#191919] text-white'
-                    : 'bg-[#f3f2f0] text-[#37352f]'
+                  m.role === 'user' ? 'bg-[#191919] text-white' : 'bg-[#f3f2f0] text-[#37352f]'
                 }`}
               >
                 {m.content}
@@ -263,8 +285,12 @@ const AgentPanel = ({ open, onClose }) => {
                         <td className="py-1.5 pr-2 font-medium text-[#191919]">
                           {r.courseCode || r.courseId}
                         </td>
-                        <td className="py-1.5 pr-2 capitalize text-[#787774]">{r.difficulty || '—'}</td>
-                        <td className="py-1.5 pr-2 text-[#37352f]">{(r.date || '').slice(0, 10)}</td>
+                        <td className="py-1.5 pr-2 capitalize text-[#787774]">
+                          {r.difficulty || '—'}
+                        </td>
+                        <td className="py-1.5 pr-2 text-[#37352f]">
+                          {(r.date || '').slice(0, 10)}
+                        </td>
                         <td className="py-1.5 text-[#37352f]">
                           {r.startTime}
                           {r.endTime ? `–${r.endTime}` : ''}

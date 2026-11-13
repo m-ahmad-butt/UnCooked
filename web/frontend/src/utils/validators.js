@@ -61,13 +61,18 @@ export const parsePhone = (value) => {
   }
   // Local PK numbers often start with 03…
   if (d.startsWith('0') && d.length <= 11) {
-    return { country: DEFAULT_COUNTRY, local: d.replace(/^0/, '').slice(0, DEFAULT_COUNTRY.localLen) };
+    return {
+      country: DEFAULT_COUNTRY,
+      local: d.replace(/^0/, '').slice(0, DEFAULT_COUNTRY.localLen),
+    };
   }
   return { country: DEFAULT_COUNTRY, local: d.slice(0, DEFAULT_COUNTRY.localLen) };
 };
 
 export const composePhone = (country, local) => {
-  const loc = digitsOnly(local).replace(/^0+/, '').slice(0, country?.localLen || 10);
+  const loc = digitsOnly(local)
+    .replace(/^0+/, '')
+    .slice(0, country?.localLen || 10);
   if (!loc) return '';
   return `+${country.dial}${loc}`;
 };

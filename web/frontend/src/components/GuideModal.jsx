@@ -27,7 +27,7 @@ export function useWarn() {
     (body) => {
       say({ title: 'Check that again', body, action: 'Got it', isError: true });
     },
-    [say],
+    [say]
   );
 }
 
@@ -41,7 +41,9 @@ export function armGuideNote(note) {
 function GuideDialog({ note, onClose }) {
   // Close on Escape
   useEffect(() => {
-    const handler = (e) => { if (e.key === 'Escape') onClose(); };
+    const handler = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [onClose]);
@@ -49,11 +51,7 @@ function GuideDialog({ note, onClose }) {
   return (
     <div className="fixed inset-0 z-[999] overflow-hidden bg-[#37352f]/10 backdrop-blur-[1px]">
       <div className="absolute right-5 top-1/2 w-[min(30rem,calc(100%-2.5rem))] -translate-y-1/2 sm:right-8">
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="guide-slide flex items-end gap-3"
-        >
+        <div role="dialog" aria-modal="true" className="guide-slide flex items-end gap-3">
           {/* Avatar */}
           <img
             src="/notion/pile-2.webp"
@@ -85,16 +83,10 @@ function GuideDialog({ note, onClose }) {
             </div>
 
             {/* Body */}
-            <p className="mt-2 text-sm leading-relaxed text-notion-muted">
-              {note.body}
-            </p>
+            <p className="mt-2 text-sm leading-relaxed text-notion-muted">{note.body}</p>
 
             {/* Hint */}
-            {note.hint && (
-              <p className="mt-3 text-sm font-medium text-notion-text">
-                {note.hint}
-              </p>
-            )}
+            {note.hint && <p className="mt-3 text-sm font-medium text-notion-text">{note.hint}</p>}
 
             {/* CTA */}
             <button type="button" className="n-btn mt-4" onClick={onClose}>

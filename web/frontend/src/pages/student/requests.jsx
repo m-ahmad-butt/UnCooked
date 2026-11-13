@@ -32,7 +32,9 @@ const StudentRequests = () => {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   const hasPending = (type) =>
     Array.isArray(requests) && requests.some((r) => r.type === type && r.status === 'PENDING');
@@ -48,7 +50,11 @@ const StudentRequests = () => {
     setSubmitting(true);
     try {
       await studentAPI.createRequest({ type: modalType, reason: reason.trim() });
-      say({ title: 'Request Submitted', body: 'Your request has been submitted for review.', action: 'OK' });
+      say({
+        title: 'Request Submitted',
+        body: 'Your request has been submitted for review.',
+        action: 'OK',
+      });
       setModalOpen(false);
       setLoading(true);
       load();
@@ -59,14 +65,19 @@ const StudentRequests = () => {
     }
   };
 
-  const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-PK', { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
+  const fmtDate = (d) =>
+    d
+      ? new Date(d).toLocaleDateString('en-PK', { year: 'numeric', month: 'short', day: 'numeric' })
+      : '—';
 
   return (
     <div className="n-page">
       <StudentNavbar />
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
         <h1 className="mb-2 text-2xl font-bold tracking-tight">Need Help</h1>
-        <p className="mb-6 text-sm text-notion-muted">Submit a request if you need to change your branch or date sheet.</p>
+        <p className="mb-6 text-sm text-notion-muted">
+          Submit a request if you need to change your branch or date sheet.
+        </p>
 
         <div className="mb-8 flex flex-wrap gap-3">
           <button
@@ -86,16 +97,22 @@ const StudentRequests = () => {
         </div>
 
         {hasPending('CHANGE_BRANCH') && (
-          <p className="mb-2 text-xs text-notion-yellow">You already have a pending branch change request.</p>
+          <p className="mb-2 text-xs text-notion-yellow">
+            You already have a pending branch change request.
+          </p>
         )}
         {hasPending('CHANGE_DATESHEET') && (
-          <p className="mb-4 text-xs text-notion-yellow">You already have a pending date sheet change request.</p>
+          <p className="mb-4 text-xs text-notion-yellow">
+            You already have a pending date sheet change request.
+          </p>
         )}
 
         <h2 className="mb-3 text-lg font-semibold">Your Requests</h2>
 
         {loading ? (
-          <div className="flex justify-center py-12"><Loader2 size={24} className="animate-spin text-notion-muted" /></div>
+          <div className="flex justify-center py-12">
+            <Loader2 size={24} className="animate-spin text-notion-muted" />
+          </div>
         ) : !Array.isArray(requests) || requests.length === 0 ? (
           <div className="n-card p-12 text-center text-sm text-notion-muted">No requests yet</div>
         ) : (
@@ -103,7 +120,9 @@ const StudentRequests = () => {
             {requests.map((r) => (
               <div key={r.id || r._id} className="n-card p-4">
                 <div className="mb-1 flex items-center justify-between">
-                  <span className="n-tag bg-notion-surface text-notion-text">{r.type?.replace('_', ' ')}</span>
+                  <span className="n-tag bg-notion-surface text-notion-text">
+                    {r.type?.replace('_', ' ')}
+                  </span>
                   <span className={`n-tag ${statusColors[r.status] || ''}`}>{r.status}</span>
                 </div>
                 <p className="mt-2 text-sm">{r.reason}</p>
@@ -122,11 +141,21 @@ const StudentRequests = () => {
       {/* Request Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setModalOpen(false)} />
+          <div
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+            onClick={() => setModalOpen(false)}
+          />
           <div className="relative mx-4 w-full max-w-md animate-in fade-in slide-in-from-bottom-2 rounded-notion-lg bg-white p-6 shadow-notion-lg">
-            <button onClick={() => setModalOpen(false)} className="absolute right-4 top-4 text-notion-muted hover:text-notion-text"><X size={18} /></button>
+            <button
+              onClick={() => setModalOpen(false)}
+              className="absolute right-4 top-4 text-notion-muted hover:text-notion-text"
+            >
+              <X size={18} />
+            </button>
             <h2 className="mb-2 text-lg font-semibold">
-              {modalType === 'CHANGE_BRANCH' ? 'Request Branch Change' : 'Request Date Sheet Change'}
+              {modalType === 'CHANGE_BRANCH'
+                ? 'Request Branch Change'
+                : 'Request Date Sheet Change'}
             </h2>
             <p className="mb-4 text-sm text-notion-muted">
               Please explain why you need this change. An admin will review your request.
@@ -142,9 +171,19 @@ const StudentRequests = () => {
               />
             </div>
             <div className="flex justify-end gap-2">
-              <button onClick={() => setModalOpen(false)} className="n-btn-secondary">Cancel</button>
-              <button onClick={handleSubmit} disabled={submitting || !reason.trim()} className="n-btn">
-                {submitting ? <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : 'Submit Request'}
+              <button onClick={() => setModalOpen(false)} className="n-btn-secondary">
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={submitting || !reason.trim()}
+                className="n-btn"
+              >
+                {submitting ? (
+                  <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                ) : (
+                  'Submit Request'
+                )}
               </button>
             </div>
           </div>

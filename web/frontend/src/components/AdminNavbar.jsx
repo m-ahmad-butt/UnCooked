@@ -4,7 +4,16 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
 import BrandLogo from './BrandLogo';
 import UserLogout from './UserLogout';
-import { LayoutDashboard, GitBranch, BookOpen, Users, CalendarClock, MessageSquare, Menu, X } from 'lucide-react';
+import {
+  LayoutDashboard,
+  GitBranch,
+  BookOpen,
+  Users,
+  CalendarClock,
+  MessageSquare,
+  Menu,
+  X,
+} from 'lucide-react';
 
 const links = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },

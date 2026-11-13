@@ -15,7 +15,14 @@ const DEPARTMENTS = [
   'Electrical Engineering',
 ];
 
-const empty = { courseCode: '', title: '', creditHours: 3, department: 'Computer Science', difficulty: 'medium', status: 'active' };
+const empty = {
+  courseCode: '',
+  title: '',
+  creditHours: 3,
+  department: 'Computer Science',
+  difficulty: 'medium',
+  status: 'active',
+};
 const isActive = (value) => String(value || '').toLowerCase() !== 'inactive';
 
 const AdminCourseForm = () => {
@@ -52,7 +59,9 @@ const AdminCourseForm = () => {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id, isEdit, navigate]);
 
   const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
@@ -87,18 +96,54 @@ const AdminCourseForm = () => {
       >
         <form onSubmit={handleSave} className="space-y-5">
           <div className="grid gap-4 sm:grid-cols-2">
-            <div><label className="n-label">Course Code *</label><input value={form.courseCode} onChange={(e) => set('courseCode', e.target.value)} className="n-input" /></div>
-            <div><label className="n-label">Title *</label><input value={form.title} onChange={(e) => set('title', e.target.value)} className="n-input" /></div>
-            <div><label className="n-label">Credit Hours</label><input type="number" min="1" max="6" value={form.creditHours} onChange={(e) => set('creditHours', Number(e.target.value))} className="n-input" /></div>
+            <div>
+              <label className="n-label">Course Code *</label>
+              <input
+                value={form.courseCode}
+                onChange={(e) => set('courseCode', e.target.value)}
+                className="n-input"
+              />
+            </div>
+            <div>
+              <label className="n-label">Title *</label>
+              <input
+                value={form.title}
+                onChange={(e) => set('title', e.target.value)}
+                className="n-input"
+              />
+            </div>
+            <div>
+              <label className="n-label">Credit Hours</label>
+              <input
+                type="number"
+                min="1"
+                max="6"
+                value={form.creditHours}
+                onChange={(e) => set('creditHours', Number(e.target.value))}
+                className="n-input"
+              />
+            </div>
             <div>
               <label className="n-label">Department</label>
-              <select value={form.department} onChange={(e) => set('department', e.target.value)} className="n-input">
-                {DEPARTMENTS.map((name) => <option key={name} value={name}>{name}</option>)}
+              <select
+                value={form.department}
+                onChange={(e) => set('department', e.target.value)}
+                className="n-input"
+              >
+                {DEPARTMENTS.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
               <label className="n-label">Level</label>
-              <select value={form.difficulty} onChange={(e) => set('difficulty', e.target.value)} className="n-input">
+              <select
+                value={form.difficulty}
+                onChange={(e) => set('difficulty', e.target.value)}
+                className="n-input"
+              >
                 <option value="easy">Easy</option>
                 <option value="medium">Medium</option>
                 <option value="hard">Hard</option>
@@ -106,16 +151,32 @@ const AdminCourseForm = () => {
             </div>
             <div>
               <label className="n-label">Status</label>
-              <select value={form.status} onChange={(e) => set('status', e.target.value)} className="n-input">
+              <select
+                value={form.status}
+                onChange={(e) => set('status', e.target.value)}
+                className="n-input"
+              >
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
               </select>
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={() => navigate('/admin/courses')} className="n-btn-secondary">Cancel</button>
+            <button
+              type="button"
+              onClick={() => navigate('/admin/courses')}
+              className="n-btn-secondary"
+            >
+              Cancel
+            </button>
             <button type="submit" disabled={saving} className="n-btn">
-              {saving ? <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : isEdit ? 'Update' : 'Create'}
+              {saving ? (
+                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              ) : isEdit ? (
+                'Update'
+              ) : (
+                'Create'
+              )}
             </button>
           </div>
         </form>

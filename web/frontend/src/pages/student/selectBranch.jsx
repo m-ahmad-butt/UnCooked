@@ -66,26 +66,42 @@ const StudentSelectBranch = () => {
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold tracking-tight">Select Your Exam Branch</h1>
           <p className="mt-2 text-sm text-notion-muted max-w-lg mx-auto">
-            Choose the branch where you will appear for your exams. This selection can only be made once, so please choose carefully.
+            Choose the branch where you will appear for your exams. This selection can only be made
+            once, so please choose carefully.
           </p>
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-20"><Loader2 size={24} className="animate-spin text-notion-muted" /></div>
+          <div className="flex justify-center py-20">
+            <Loader2 size={24} className="animate-spin text-notion-muted" />
+          </div>
         ) : branches.length === 0 ? (
-          <div className="n-card p-12 text-center text-sm text-notion-muted">No branches available at the moment</div>
+          <div className="n-card p-12 text-center text-sm text-notion-muted">
+            No branches available at the moment
+          </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {branches.map((b) => (
-              <div key={b.id || b._id} className="n-card p-5 flex flex-col hover:shadow-notion-lg transition-shadow">
+              <div
+                key={b.id || b._id}
+                className="n-card p-5 flex flex-col hover:shadow-notion-lg transition-shadow"
+              >
                 <h3 className="text-lg font-semibold mb-1">{b.name}</h3>
                 <p className="text-xs font-medium text-notion-muted mb-3">{b.code}</p>
                 <div className="space-y-2 flex-1 text-sm text-notion-muted">
-                  <div className="flex items-center gap-2"><MapPin size={14} /> {b.city || 'N/A'}</div>
-                  <div className="flex items-start gap-2"><Building size={14} className="mt-0.5 shrink-0" /> {b.address || 'N/A'}</div>
-                  <div className="flex items-center gap-2"><Phone size={14} /> {b.contactNumber || 'N/A'}</div>
+                  <div className="flex items-center gap-2">
+                    <MapPin size={14} /> {b.city || 'N/A'}
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Building size={14} className="mt-0.5 shrink-0" /> {b.address || 'N/A'}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone size={14} /> {b.contactNumber || 'N/A'}
+                  </div>
                 </div>
-                <button onClick={() => handleSelect(b)} className="n-btn mt-4 w-full">Select Branch</button>
+                <button onClick={() => handleSelect(b)} className="n-btn mt-4 w-full">
+                  Select Branch
+                </button>
               </div>
             ))}
           </div>
@@ -94,7 +110,10 @@ const StudentSelectBranch = () => {
 
       <ConfirmModal
         isOpen={confirmOpen}
-        onClose={() => { setConfirmOpen(false); setSelected(null); }}
+        onClose={() => {
+          setConfirmOpen(false);
+          setSelected(null);
+        }}
         onConfirm={handleConfirm}
         title="Confirm Branch Selection"
         message={`You are about to select "${selected?.name}" as your exam branch. This can only be done once and cannot be changed later (unless you submit a request). Are you sure?`}

@@ -1,0 +1,208 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+# this shi read repo code, PR metadata and security findings
+permissions:
+  contents: read
+  pull-requests: read
+  security-events: write
+
+# bucket -> one run at a time per branch or PR
+# ci- -> file
+# .github/workflows/ci.yml -> workflow file
+# ${github.ref} -> refs/heads/main or refs/pull/1/merge
+# cancel-in-progress: true -> cancel previous runs if they are still running
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gitleaks:
+    name: 02 Secret scan (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+    # action -> clone the repo and fetch all branches
+      - uses: actions/checkout@v4
+        with:
+    # 0-> full history, 1-> only latest commit
+          fetch-depth: 0
+      # action -> scan the repo for secrets
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  eslint:
+    name: 03 Lint (ESLint)
+    needs: gitleaks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web/frontend
+    steps:
+      - uses: actions/checkout@v4
+      # action -> setup node environment
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          # cache -> npm install
+          cache: npm
+          # cache-dependency-path -> package-lock.json
+          cache-dependency-path: web/frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+
+  prettier:
+    name: 04 Format (Prettier)
+    needs: eslint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/frontend/package-lock.json
+      - run: npm ci
+      - run: npm run format:check
+
+  hadolint:
+    name: 05 Dockerfile lint (Hadolint)
+    needs: prettier
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: web/frontend/Dockerfile
+          # info allow but warning and error -> fail
+          failure-threshold: warning
+      - uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: web/backend/Dockerfile
+          failure-threshold: warning
+      - uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: web/agent/Dockerfile
+          failure-threshold: warning
+
+  unit-tests:
+    name: 06 Unit tests and coverage
+    needs: hadolint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/backend/package-lock.json
+      - run: npm ci
+      - run: npm run test:coverage
+      # action -> upload coverage report to GitHub Actions
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-lcov
+          path: web/backend/coverage/lcov.info
+          if-no-files-found: error
+
+  sonarcloud:
+    name: 07 Static analysis (SonarCloud)
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: coverage-lcov
+          path: web/backend/coverage
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  snyk:
+    name: 08 Dependency scan (Snyk)
+    needs: sonarcloud
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Snyk (backend)
+        uses: snyk/actions/node@master
+        continue-on-error: false
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: test
+          args: --severity-threshold=high --file=web/backend/package.json
+      - name: Snyk (frontend)
+        uses: snyk/actions/node@master
+        continue-on-error: false
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+        # snyk test -> scan dependencies
+          command: test
+          # fail only if high and critical issues are found
+          args: --severity-threshold=high --file=web/frontend/package.json
+
+  docker-build:
+    name: 09 Docker build
+    needs: snyk
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build frontend
+        run: docker build -t uncooked-frontend:${{ github.sha }} ./web/frontend
+      - name: Build backend
+        run: docker build -t uncooked-backend:${{ github.sha }} ./web/backend
+      - name: Build agent
+        run: docker build -t uncooked-agent:${{ github.sha }} ./web/agent
+
+  trivy:
+    name: 10 Image scan (Trivy)
+    needs: docker-build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild images for scan
+        run: |
+          docker build -t uncooked-frontend:${{ github.sha }} ./web/frontend
+          docker build -t uncooked-backend:${{ github.sha }} ./web/backend
+          docker build -t uncooked-agent:${{ github.sha }} ./web/agent
+      - name: Trivy frontend
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: uncooked-frontend:${{ github.sha }}
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
+      - name: Trivy backend
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: uncooked-backend:${{ github.sha }}
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
+      - name: Trivy agent
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: uncooked-agent:${{ github.sha }}
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          # ignore-unfixed: true -> skip vulns that have no fix available yet
+          ignore-unfixed: true

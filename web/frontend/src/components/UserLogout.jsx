@@ -8,7 +8,9 @@ const UserLogout = ({ user, onLogout, align = 'end' }) => {
     : [user?.program || 'Student', user?.registrationNumber || 'ExamSlot'].join(' · ');
 
   return (
-    <div className={`flex items-center gap-3 ${align === 'start' ? 'justify-start' : 'justify-end'}`}>
+    <div
+      className={`flex items-center gap-3 ${align === 'start' ? 'justify-start' : 'justify-end'}`}
+    >
       <div className="min-w-0 leading-tight">
         <p className="truncate text-sm font-semibold text-notion-text">{name}</p>
         <p className="truncate text-xs text-notion-muted">{subtitle}</p>
