@@ -96,6 +96,24 @@ Files:
   web/backend/package-lock.json
 
 
+6) Snyk — job 08 failed (ioredis High)
+Issue:
+  SNYK-JS-IOREDIS-19963957 Uncontrolled Recursion [HIGH] in ioredis@5.10.1
+  Introduced by hackathon-backend-monolith > ioredis@5.10.1
+  Summary: 1 High.
+
+Fix:
+  Upgrade ioredis 5.10.1 → 6.0.0 (Snyk remediation).
+  redis.js still uses `new Redis(REDIS_URL, { maxRetriesPerRequest, lazyConnect })`.
+
+Commit message (push yourself):
+  fix(deps): upgrade ioredis to 6.0.0 for Snyk high
+
+Files:
+  web/backend/package.json
+  web/backend/package-lock.json
+
+
 Accepted (not fail-threshold): see SECURITY.md
   exceljs → uuid     Moderate  no non-breaking fix
   react-router-dom   Moderate  v7 is breaking; stay on v6 for now
