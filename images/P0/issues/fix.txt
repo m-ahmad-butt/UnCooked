@@ -227,11 +227,11 @@ Issue:
   Installed nginx 1.28.2-r1; fixes require 1.28.3-r0 … 1.28.3-r6.
 
 Fix:
-  Switch to nginx/nginx-unprivileged:1.28.3-alpine (patched stable)
-  + apk upgrade. (nginxinc registry is deprecated.)
+  1.28.3-alpine tag does not exist on Hub (build failed).
+  Use nginx/nginx-unprivileged:1.31.7-alpine (published) + apk upgrade.
 
 Commit message (push yourself):
-  fix(docker): use nginx 1.28.3-alpine for Trivy nginx CVEs
+  fix(docker): use nginx-unprivileged 1.31.7-alpine (valid Hub tag)
 
 
 Accepted (not fail-threshold): see SECURITY.md
