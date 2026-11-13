@@ -131,6 +131,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          # Free org: QG API only for main. Feature branches still get scanned.
+          args: >-
+            -Dsonar.qualitygate.wait=${{ github.ref == 'refs/heads/main' && 'true' || 'false' }}
 
   snyk:
     name: 08 Dependency scan (Snyk)

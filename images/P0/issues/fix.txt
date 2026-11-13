@@ -127,9 +127,9 @@ Issue:
 Fix:
   - sonar.coverage.exclusions for frontend/agent (no unit coverage yet)
   - sonar.cpd.exclusions for frontend pages (CRUD similarity)
-  - sonar.qualitygate.wait=true so CI job 07 matches the gate
   - unit tests for import helpers (exceljs migration new code)
   - terraform: associate_public_ip_address = false (Sonar security)
+  - (QG wait on every branch broke free tier — see issue 8)
 
 Commit message (push yourself):
   fix(sonar): meet new-code quality gate coverage and security
@@ -137,6 +137,23 @@ Commit message (push yourself):
 If Reliability/Security still C after push:
   SonarCloud → Issues → New Code → fix remaining bugs/vulns
   (or Accept with reason + SECURITY.md — gate needs ratings A)
+
+----------------------------------------
+8) SonarCloud job 07 failed (QG wait on non-main)
+----------------------------------------
+Issue:
+  ERROR: Failed to get Quality Gate status -
+  "Organization is not allowed to access data from non main branches."
+  Cause: sonar.qualitygate.wait=true on feature branch; free SonarCloud
+  only allows QG API on main.
+
+Fix:
+  Remove always-on qualitygate.wait from sonar-project.properties.
+  In ci.yml set -Dsonar.qualitygate.wait=true only when ref is main;
+  false on feature branches (scan still runs).
+
+Commit message (push yourself):
+  fix(sonar): wait for quality gate only on main
 
 
 Accepted (not fail-threshold): see SECURITY.md
