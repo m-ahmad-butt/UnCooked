@@ -1,11 +1,11 @@
-FROM node:22-alpine AS deps
+FROM node:25-alpine AS deps
 WORKDIR /app
 # hadolint ignore=DL3018
 RUN apk upgrade --no-cache
 COPY package*.json ./
 RUN npm ci --omit=dev
 
-FROM node:22-alpine
+FROM node:25-alpine
 WORKDIR /app
 # hadolint ignore=DL3018
 RUN apk upgrade --no-cache \
