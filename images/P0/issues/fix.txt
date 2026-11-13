@@ -272,3 +272,26 @@ Fix:
 
 Commit message (push yourself):
   fix(agent): bump LangChain/FastAPI deps for Trivy
+
+
+17) "SonarCloud Code Analysis" red while ci/07 green
+Issue:
+  Checks: 9 successful, 1 failing.
+  All workflow jobs 02–10 passed (incl. Trivy).
+  Only "SonarCloud Code Analysis" failed — Quality Gate failed.
+  That check is the SonarCloud GitHub App decoration, not job 07.
+  Job 07 uploads the scan with qualitygate.wait=false off-main
+  (free tier), so the Actions job stays green even when QG fails.
+  The App still posts the QG result as a separate check.
+
+Fix (no ci.yml change needed):
+  1. Confirm Automatic Analysis OFF:
+     SonarCloud → Project → Administration → Analysis Method
+  2. Open SonarCloud → Project → Quality Gate / Issues (New Code)
+     Fix remaining Coverage / Reliability / Security / Duplication
+     until gate is Passed (same class of work as issues 7 + 10).
+  3. Branch ruleset: require `ci / 07 Static analysis (SonarCloud)`,
+     NOT `SonarCloud Code Analysis`, unless you want App QG to block.
+     Phase 01 evidence = workflow jobs 02–10.
+
+If you paste the Sonar New Code failures, we can patch code next.
