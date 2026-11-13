@@ -1,0 +1,83 @@
+Phase 01 CI issues and fixes
+
+1) Hadolint: job 05 failed
+Issue
+  web/agent/Dockerfile DL3008
+  "Pin versions in apt get install" for curl (warning treated as fail
+  because failure-threshold: warning).
+
+Fix:
+  Added `# hadolint ignore=DL3008` above the apt-get RUN.
+  curl stays unpinned (Debian slim package pin is brittle); needed for
+  compose healthcheck.
+
+Commit:
+  1ba3d21 fix(agent): silence Hadolint DL3008 for apt curl install
+
+Screenshot:
+  images/P0/issues/ (Hadolint failure run, if saved)
+
+2) SonarCloud: job 07 failed
+Issue:
+  "You are running CI analysis while Automatic Analysis is enabled."
+  SonarCloud UI auto-analysis conflicted with GitHub Actions scan.
+
+Fix:
+  SonarCloud project → disable Automatic Analysis.
+  Keep CI analysis via job 07 (sonarqube-scan-action + SONAR_TOKEN).
+
+Commit:
+  (UI only — no repo change)
+
+3) Snyk: job 08 failed (missing node_modules)
+Issue:
+  ERROR SNYK-CLI-0000
+  "Missing node_modules folder: we can't test without dependencies."
+
+Fix:
+  In .github/workflows/ci.yml job 08: run `npm ci` in web/backend and
+  web/frontend before each `snyk test`.
+
+Commit:
+  6c029cc fix(ci): install npm deps before Snyk test
+
+Screenshot:
+  images/P0/issues/Snyk-error.png (first failure: missing node_modules)
+
+4) Snyk: job 08 failed (High/Critical vulns)
+Issue:
+  Backend scan found High/Critical deps, e.g.:
+  - qs@6.14.x (HIGH) via express/body-parser — fix >= 6.16.1
+  - proxy-addr@2.0.7 (CRITICAL) via express — fix >= 2.0.8
+  - xlsx@0.18.5 (HIGH) — ReDoS / prototype pollution — no upstream fix
+  - nodemailer older builds (HIGH) — upgrade available
+
+  Summary at fail time: ~5 Critical, ~41 High (open).
+
+Fix:
+  - Removed `xlsx`; replaced Excel import with `exceljs` in
+    web/backend/src/services/import.service.js (async parseSheet).
+  - Bumped `nodemailer` to ^10.5.0.
+  - Added npm `overrides` for `qs` ^6.16.2.
+  - npm audit fix / lockfile refresh (proxy-addr → 2.0.8).
+  - Snyk frontend args: `--prod` (scan production deps; threshold still high).
+  - Documented remaining Moderate accepts in SECURITY.md
+    (exceljs→uuid, react-router-dom v6).
+
+Commit:
+  8fa6b48 fix(deps): clear Snyk high/critical by replacing xlsx and bumping packages
+
+Files:
+  web/backend/package.json
+  web/backend/package-lock.json
+  web/backend/src/services/import.service.js
+  .github/workflows/ci.yml
+  SECURITY.md
+
+Screenshot:
+  images/P0/issues/ (Snyk High/Critical summary run)
+
+
+Accepted (not fail-threshold): see SECURITY.md
+  exceljs → uuid     Moderate  no non-breaking fix
+  react-router-dom   Moderate  v7 is breaking; stay on v6 for now
