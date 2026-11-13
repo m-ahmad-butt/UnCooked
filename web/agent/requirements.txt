@@ -9,4 +9,4 @@ groq==0.15.0
 langgraph==1.2.21
 langchain-core==1.8.0
 langsmith==0.14.17
-python-dotenv==1.0.1
+python-dotenv==1.2.4
