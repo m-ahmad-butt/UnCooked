@@ -193,5 +193,17 @@ Commit message (push yourself):
   fix(deps): upgrade react-router-dom to 7.18.5 for Snyk high
 
 
+12) Trivy job 10 — invalid action version
+Issue:
+  Unable to resolve action 'aquasecurity/trivy-action@0.28.0'
+  Tag 0.28.0 does not exist (Aqua moved to v-prefixed tags).
+
+Fix:
+  Pin aquasecurity/trivy-action@v0.36.0 for all three image scans.
+
+Commit message (push yourself):
+  fix(ci): pin Trivy action to v0.36.0
+
+
 Accepted (not fail-threshold): see SECURITY.md
   exceljs -> uuid     Moderate  no non-breaking fix

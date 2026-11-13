@@ -197,21 +197,21 @@ jobs:
           docker build -t uncooked-backend:${{ github.sha }} ./web/backend
           docker build -t uncooked-agent:${{ github.sha }} ./web/agent
       - name: Trivy frontend
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: uncooked-frontend:${{ github.sha }}
           severity: HIGH,CRITICAL
           exit-code: "1"
           ignore-unfixed: true
       - name: Trivy backend
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: uncooked-backend:${{ github.sha }}
           severity: HIGH,CRITICAL
           exit-code: "1"
           ignore-unfixed: true
       - name: Trivy agent
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: uncooked-agent:${{ github.sha }}
           severity: HIGH,CRITICAL
