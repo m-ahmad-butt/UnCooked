@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+
 const keyOf = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
 const cellText = (value) => {
@@ -18,7 +20,9 @@ const pick = (row, names) => {
 const makePassword = () => {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
   let out = 'Vu';
-  for (let i = 0; i < 6; i += 1) out += alphabet[Math.floor(Math.random() * alphabet.length)];
+  for (let i = 0; i < 6; i += 1) {
+    out += alphabet[crypto.randomInt(0, alphabet.length)];
+  }
   return out;
 };
 
