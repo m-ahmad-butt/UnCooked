@@ -1,8 +1,9 @@
-FROM python:3.12.7-slim
+FROM python:3.12-slim-bookworm
 WORKDIR /app
 
 # hadolint ignore=DL3008
 RUN apt-get update \
+  && apt-get upgrade -y \
   && apt-get install -y --no-install-recommends curl \
   && rm -rf /var/lib/apt/lists/* \
   && useradd --create-home --uid 10001 appuser

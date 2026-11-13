@@ -205,5 +205,22 @@ Commit message (push yourself):
   fix(ci): pin Trivy action to v0.36.0
 
 
+13) Trivy job 10 — Alpine/OS High+Critical in images
+Issue:
+  Frontend image (nginx alpine 3.21) reported 68 vulns
+  (HIGH 65, CRITICAL 3) in OS libs (openssl, zlib, curl, …).
+  Status=fixed → patches exist; base image packages were stale.
+  ignore-unfixed was already true; these were fixable.
+
+Fix:
+  - frontend: node:22-alpine build + nginx-unprivileged:1.28-alpine
+    with `apk upgrade --no-cache`
+  - backend: node:22-alpine + apk upgrade
+  - agent: python:3.12-slim-bookworm + apt-get upgrade
+
+Commit message (push yourself):
+  fix(docker): upgrade bases and apk/apt packages for Trivy
+
+
 Accepted (not fail-threshold): see SECURITY.md
   exceljs -> uuid     Moderate  no non-breaking fix
