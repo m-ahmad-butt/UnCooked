@@ -155,7 +155,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           command: test
-          args: --severity-threshold=high --file=web/backend/package.json
+          args: --severity-threshold=high --file=web/backend/package.json --package-manager=npm
       - name: Install frontend deps
         run: npm ci
         working-directory: web/frontend
@@ -166,7 +166,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           command: test
-          args: --severity-threshold=high --file=web/frontend/package.json
+          args: --severity-threshold=high --file=web/frontend/package.json --package-manager=npm --prod
 
   docker-build:
     name: 09 Docker build

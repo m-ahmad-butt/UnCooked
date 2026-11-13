@@ -17,7 +17,9 @@ Do not disable scanners or lower thresholds. Fix findings, or document accepted 
 
 | ID / package | Severity | Reason | Owner | Review by |
 |--------------|----------|--------|-------|-----------|
-| _(none yet)_ | | | | |
+| `xlsx` (removed) | High | Replaced with `exceljs` — community `xlsx` has no fixed release | Group | 2026-12 |
+| `exceljs` → `uuid` | Moderate | No non-breaking fix; admin Excel import only; below Snyk fail threshold | Group | 2026-12 |
+| `react-router-dom` | Moderate | Fix needs v7 major; stay on React 18 router v6 until upgrade sprint | Group | 2026-12 |
 
 ## Secrets
 

@@ -1,10 +1,17 @@
-const XLSX = require('xlsx');
+const ExcelJS = require('exceljs');
 const bcrypt = require('bcryptjs');
 const { User, Branch, Course, ExamSlot, CourseAssignment } = require('../models');
 
 const KINDS = ['branches', 'courses', 'students', 'slots', 'registrations'];
 
 const keyOf = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+const cellText = (value) => {
+  if (value == null) return '';
+  if (typeof value === 'object' && value.text != null) return String(value.text).trim();
+  if (value instanceof Date) return value.toISOString();
+  return String(value).trim();
+};
 
 const pick = (row, names) => {
   const wanted = new Set(names.map(keyOf));
@@ -21,11 +28,28 @@ const makePassword = () => {
   return out;
 };
 
-const parseSheet = (buffer) => {
-  const book = XLSX.read(buffer, { type: 'buffer', cellDates: true });
-  const sheet = book.Sheets[book.SheetNames[0]];
+const parseSheet = async (buffer) => {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer);
+  const sheet = workbook.worksheets[0];
   if (!sheet) return [];
-  return XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false });
+
+  const headers = [];
+  const rows = [];
+  sheet.eachRow((row, rowNumber) => {
+    const values = row.values || [];
+    if (rowNumber === 1) {
+      for (let i = 1; i < values.length; i += 1) headers[i] = cellText(values[i]);
+      return;
+    }
+    const obj = {};
+    for (let i = 1; i < values.length; i += 1) {
+      const header = headers[i] || `col${i}`;
+      obj[header] = cellText(values[i]);
+    }
+    rows.push(obj);
+  });
+  return rows;
 };
 
 const difficultyOf = (value) => {
@@ -138,7 +162,7 @@ const previewImport = async (kind, buffer) => {
     error.status = 400;
     throw error;
   }
-  const rawRows = parseSheet(buffer);
+  const rawRows = await parseSheet(buffer);
   if (!rawRows.length) {
     const error = new Error('The file has no data rows');
     error.status = 400;
