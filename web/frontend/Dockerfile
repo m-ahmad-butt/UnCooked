@@ -9,7 +9,8 @@ ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
-FROM nginxinc/nginx-unprivileged:1.28-alpine
+# Official unprivileged image (nginxinc mirror is deprecated). 1.28.3+ patches nginx CVEs.
+FROM nginx/nginx-unprivileged:1.28.3-alpine
 USER root
 # hadolint ignore=DL3018
 RUN apk upgrade --no-cache
