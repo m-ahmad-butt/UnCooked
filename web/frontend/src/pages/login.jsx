@@ -49,7 +49,7 @@ const LoginPage = () => {
           kicker: 'Admin desk',
           body: 'Branches, courses, students, exam slots and requests are all here.',
           hint: 'Start by checking the dashboard for an overview.',
-          action: 'Let\'s go',
+          action: "Let's go",
         });
       } else {
         const hasBranch = data.user.branchLocked;
@@ -59,7 +59,7 @@ const LoginPage = () => {
           say({
             title: `Welcome, ${firstName}.`,
             kicker: 'Action needed',
-            body: 'You haven\'t selected your exam branch yet.',
+            body: "You haven't selected your exam branch yet.",
             hint: 'Pick the campus where you want to sit your papers. This is a one-time choice.',
             action: 'Got it',
           });
@@ -69,7 +69,7 @@ const LoginPage = () => {
             kicker: 'Next step',
             body: 'Branch selected. Now pick exam slots for each of your courses.',
             hint: 'Go to Dashboard and choose a date and time for every assigned course.',
-            action: 'Let\'s go',
+            action: "Let's go",
           });
         } else {
           say({
@@ -152,7 +152,10 @@ const LoginPage = () => {
               </div>
 
               <div className="flex justify-end">
-                <Link to="/forgot-password" className="text-xs text-notion-muted hover:text-notion-text transition-colors">
+                <Link
+                  to="/forgot-password"
+                  className="text-xs text-notion-muted hover:text-notion-text transition-colors"
+                >
                   Forgot password?
                 </Link>
               </div>
@@ -198,7 +201,8 @@ const LoginPage = () => {
             </h3>
           </div>
           <p className="text-base leading-relaxed text-notion-muted">
-            Pick your exam branch, choose dates and times for each course, and print a clean, conflict-free date sheet.
+            Pick your exam branch, choose dates and times for each course, and print a clean,
+            conflict-free date sheet.
           </p>
         </div>
       </div>

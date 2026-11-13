@@ -101,9 +101,10 @@ data "aws_ami" "ubuntu" {
 # ---------------------------------------------------------------------------
 
 resource "aws_instance" "stage" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = local.instance_type
-  key_name      = aws_key_pair.server_key.key_name
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = local.instance_type
+  key_name                    = aws_key_pair.server_key.key_name
+  associate_public_ip_address = false
 
   vpc_security_group_ids = [
     aws_security_group.server_sg.id
@@ -122,9 +123,10 @@ resource "aws_instance" "stage" {
 }
 
 resource "aws_instance" "production" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = local.instance_type
-  key_name      = aws_key_pair.server_key.key_name
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = local.instance_type
+  key_name                    = aws_key_pair.server_key.key_name
+  associate_public_ip_address = false
 
   vpc_security_group_ids = [
     aws_security_group.server_sg.id

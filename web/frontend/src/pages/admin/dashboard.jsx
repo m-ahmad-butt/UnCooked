@@ -32,9 +32,10 @@ const smoothPath = (points) => {
   return d;
 };
 
-const fmtDate = (d) => (
-  d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
-);
+const fmtDate = (d) =>
+  d
+    ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : '—';
 
 const typeLabel = (type) => {
   if (type === 'CHANGE_BRANCH') return 'Change branch';
@@ -105,24 +106,73 @@ function TrendChart({ trend }) {
         </defs>
         {ticks.map((tick) => (
           <g key={tick}>
-            <line x1={padL} x2={w - padR} y1={yAt(tick)} y2={yAt(tick)} stroke="#e9e9e7" strokeWidth="1" />
+            <line
+              x1={padL}
+              x2={w - padR}
+              y1={yAt(tick)}
+              y2={yAt(tick)}
+              stroke="#e9e9e7"
+              strokeWidth="1"
+            />
             <text x={padL - 8} y={yAt(tick) + 4} textAnchor="end" fontSize="11" fill="#9b9a97">
               {tick}
             </text>
           </g>
         ))}
         <path d={area} fill="url(#studentFill)" />
-        <path d={requestPath} fill="none" stroke="#448361" strokeWidth="2.4" strokeLinejoin="round" strokeLinecap="round" />
-        <path d={studentPath} fill="none" stroke="#37352f" strokeWidth="2.4" strokeLinejoin="round" strokeLinecap="round" />
+        <path
+          d={requestPath}
+          fill="none"
+          stroke="#448361"
+          strokeWidth="2.4"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+        <path
+          d={studentPath}
+          fill="none"
+          stroke="#37352f"
+          strokeWidth="2.4"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
         {hover != null && (
           <g>
-            <line x1={xAt(hover)} x2={xAt(hover)} y1={padT} y2={baseline} stroke="#d3d1cb" strokeDasharray="3 3" />
-            <circle cx={students[hover].x} cy={students[hover].y} r="4.5" fill="#37352f" stroke="#fff" strokeWidth="2" />
-            <circle cx={requests[hover].x} cy={requests[hover].y} r="4.5" fill="#448361" stroke="#fff" strokeWidth="2" />
+            <line
+              x1={xAt(hover)}
+              x2={xAt(hover)}
+              y1={padT}
+              y2={baseline}
+              stroke="#d3d1cb"
+              strokeDasharray="3 3"
+            />
+            <circle
+              cx={students[hover].x}
+              cy={students[hover].y}
+              r="4.5"
+              fill="#37352f"
+              stroke="#fff"
+              strokeWidth="2"
+            />
+            <circle
+              cx={requests[hover].x}
+              cy={requests[hover].y}
+              r="4.5"
+              fill="#448361"
+              stroke="#fff"
+              strokeWidth="2"
+            />
           </g>
         )}
         {trend.map((t, i) => (
-          <text key={`${t.year}-${t.month}`} x={xAt(i)} y={h - 8} textAnchor="middle" fontSize="10" fill="#9b9a97">
+          <text
+            key={`${t.year}-${t.month}`}
+            x={xAt(i)}
+            y={h - 8}
+            textAnchor="middle"
+            fontSize="10"
+            fill="#9b9a97"
+          >
             {t.label}
           </text>
         ))}
@@ -142,13 +192,17 @@ function TrendChart({ trend }) {
             <span className="flex items-center gap-1.5 text-notion-muted">
               <span className="h-1.5 w-1.5 rounded-full bg-notion-text" /> Students
             </span>
-            <span className="font-semibold text-notion-text">{active.students.toLocaleString()}</span>
+            <span className="font-semibold text-notion-text">
+              {active.students.toLocaleString()}
+            </span>
           </div>
           <div className="mt-1 flex items-center justify-between text-xs">
             <span className="flex items-center gap-1.5 text-notion-muted">
               <span className="h-1.5 w-1.5 rounded-full bg-notion-green" /> Requests
             </span>
-            <span className="font-semibold text-notion-text">{active.requests.toLocaleString()}</span>
+            <span className="font-semibold text-notion-text">
+              {active.requests.toLocaleString()}
+            </span>
           </div>
         </div>
       )}
@@ -192,7 +246,10 @@ const AdminDashboard = () => {
 
   const firstName = (user?.fullName || user?.email || 'Admin').split(/[\s@]/)[0];
   const today = new Date().toLocaleDateString('en-US', {
-    weekday: 'long', month: 'short', day: 'numeric', year: 'numeric',
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   });
   const monthLabel = new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 
@@ -213,7 +270,7 @@ const AdminDashboard = () => {
 
   const visibleRequests = useMemo(
     () => (tab === 'pending' ? requests.filter((r) => r.status === 'PENDING') : requests),
-    [requests, tab],
+    [requests, tab]
   );
 
   const onSearch = (e) => {
@@ -236,7 +293,10 @@ const AdminDashboard = () => {
             <h1 className="text-2xl font-bold tracking-tight">Welcome back, {firstName}</h1>
           </div>
           <form onSubmit={onSearch} className="relative w-full max-w-xs">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-notion-muted" />
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-notion-muted"
+            />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -256,12 +316,16 @@ const AdminDashboard = () => {
               <section className="n-card p-5 sm:p-6">
                 <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-sm font-semibold">Overview</h2>
-                  <span className="text-xs text-notion-muted">{stats?.totalCourses ?? 0} courses · {stats?.totalSlots ?? 0} slots</span>
+                  <span className="text-xs text-notion-muted">
+                    {stats?.totalCourses ?? 0} courses · {stats?.totalSlots ?? 0} slots
+                  </span>
                 </div>
                 <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-center">
                   <div>
                     <p className="text-sm text-notion-muted">Students enrolled</p>
-                    <p className="mt-1 text-3xl font-bold tracking-tight">{total.toLocaleString()}</p>
+                    <p className="mt-1 text-3xl font-bold tracking-tight">
+                      {total.toLocaleString()}
+                    </p>
                     <div className="mt-3 flex flex-wrap items-center gap-3 text-sm font-medium">
                       <span className="inline-flex items-center gap-1 text-notion-green">
                         <ArrowUpRight size={15} /> {saved.toLocaleString()} saved
@@ -285,35 +349,62 @@ const AdminDashboard = () => {
                   <div className="n-surface p-4">
                     <div className="mb-3 flex items-start justify-between">
                       <p className="text-sm text-notion-muted">Date sheets</p>
-                      <Link to="/admin/students" className="text-xs font-medium text-notion-muted hover:text-notion-text">View</Link>
+                      <Link
+                        to="/admin/students"
+                        className="text-xs font-medium text-notion-muted hover:text-notion-text"
+                      >
+                        View
+                      </Link>
                     </div>
                     <p className="text-2xl font-bold tracking-tight">{saved.toLocaleString()}</p>
                     <div className="mt-4 flex h-2.5 overflow-hidden rounded-full bg-notion-hover">
-                      <div className="h-full rounded-full bg-notion-text" style={{ width: `${savedPct}%` }} />
+                      <div
+                        className="h-full rounded-full bg-notion-text"
+                        style={{ width: `${savedPct}%` }}
+                      />
                     </div>
                     <p className="mt-3 text-sm leading-5 text-notion-muted">
-                      Saved date sheets cover <span className="font-semibold text-notion-text">{savedPct}%</span> of enrolled students.
+                      Saved date sheets cover{' '}
+                      <span className="font-semibold text-notion-text">{savedPct}%</span> of
+                      enrolled students.
                     </p>
                   </div>
                   <div className="n-surface p-4">
                     <div className="mb-3 flex items-start justify-between">
                       <p className="text-sm text-notion-muted">Requests</p>
-                      <Link to="/admin/requests" className="text-xs font-medium text-notion-muted hover:text-notion-text">View</Link>
+                      <Link
+                        to="/admin/requests"
+                        className="text-xs font-medium text-notion-muted hover:text-notion-text"
+                      >
+                        View
+                      </Link>
                     </div>
-                    <p className="text-2xl font-bold tracking-tight">{requestTotal.toLocaleString()}</p>
+                    <p className="text-2xl font-bold tracking-tight">
+                      {requestTotal.toLocaleString()}
+                    </p>
                     <div className="mt-4 flex h-2.5 overflow-hidden rounded-full bg-notion-hover">
-                      {requestTotal === 0 ? null : requestParts.map((part) => (
-                        <div
-                          key={part.label}
-                          className={`h-full ${part.bar}`}
-                          style={{ width: `${(part.value / requestTotal) * 100}%` }}
-                        />
-                      ))}
+                      {requestTotal === 0
+                        ? null
+                        : requestParts.map((part) => (
+                            <div
+                              key={part.label}
+                              className={`h-full ${part.bar}`}
+                              style={{ width: `${(part.value / requestTotal) * 100}%` }}
+                            />
+                          ))}
                     </div>
                     <p className="mt-3 text-sm leading-5 text-notion-muted">
-                      {requestTotal === 0
-                        ? 'No change requests yet.'
-                        : <>The biggest share is <span className={`font-semibold ${biggestRequest.text}`}>{biggestRequest.label}</span> at {biggestPct}%.</>}
+                      {requestTotal === 0 ? (
+                        'No change requests yet.'
+                      ) : (
+                        <>
+                          The biggest share is{' '}
+                          <span className={`font-semibold ${biggestRequest.text}`}>
+                            {biggestRequest.label}
+                          </span>{' '}
+                          at {biggestPct}%.
+                        </>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -340,7 +431,9 @@ const AdminDashboard = () => {
                   </div>
                 </div>
                 {visibleRequests.length === 0 ? (
-                  <p className="py-8 text-center text-sm text-notion-muted">No requests in this view.</p>
+                  <p className="py-8 text-center text-sm text-notion-muted">
+                    No requests in this view.
+                  </p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full min-w-[560px]">
@@ -365,15 +458,27 @@ const AdminDashboard = () => {
                               <td className="n-td text-notion-muted">{fmtDate(r.createdAt)}</td>
                               <td className="n-td font-medium">
                                 {studentId ? (
-                                  <Link to={`/admin/students/${studentId}`} onClick={(e) => e.stopPropagation()} className="hover:underline">
+                                  <Link
+                                    to={`/admin/students/${studentId}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="hover:underline"
+                                  >
                                     {name}
                                   </Link>
-                                ) : name}
+                                ) : (
+                                  name
+                                )}
                               </td>
                               <td className="n-td text-notion-muted">{typeLabel(r.type)}</td>
                               <td className="n-td">
-                                <span className={`n-tag ${statusStyle[r.status] || 'bg-notion-surface text-notion-muted'}`}>
-                                  {r.status === 'APPROVED' ? 'Approved' : r.status === 'REJECTED' ? 'Rejected' : 'Pending'}
+                                <span
+                                  className={`n-tag ${statusStyle[r.status] || 'bg-notion-surface text-notion-muted'}`}
+                                >
+                                  {r.status === 'APPROVED'
+                                    ? 'Approved'
+                                    : r.status === 'REJECTED'
+                                      ? 'Rejected'
+                                      : 'Pending'}
                                 </span>
                               </td>
                             </tr>
@@ -390,20 +495,32 @@ const AdminDashboard = () => {
               <section className="n-card p-5">
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-sm font-semibold">Branches</h2>
-                  <Link to="/admin/branches" className="text-xs font-medium text-notion-muted hover:text-notion-text">View all</Link>
+                  <Link
+                    to="/admin/branches"
+                    className="text-xs font-medium text-notion-muted hover:text-notion-text"
+                  >
+                    View all
+                  </Link>
                 </div>
                 {branches.length === 0 ? (
                   <p className="py-6 text-center text-sm text-notion-muted">No branches yet.</p>
                 ) : (
                   <ul>
                     {branches.map((b) => (
-                      <li key={b.id || b._id} className="border-t border-notion-border first:border-t-0">
+                      <li
+                        key={b.id || b._id}
+                        className="border-t border-notion-border first:border-t-0"
+                      >
                         <Link to="/admin/branches" className="flex items-center gap-3 py-3">
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-medium">{b.name}</p>
-                            <p className="truncate text-xs text-notion-muted">{b.city || 'Campus'} · {b.code}</p>
+                            <p className="truncate text-xs text-notion-muted">
+                              {b.city || 'Campus'} · {b.code}
+                            </p>
                           </div>
-                          <span className={`n-tag ${b.status === 'inactive' ? 'bg-notion-surface text-notion-muted' : 'bg-notion-green-soft text-notion-green'}`}>
+                          <span
+                            className={`n-tag ${b.status === 'inactive' ? 'bg-notion-surface text-notion-muted' : 'bg-notion-green-soft text-notion-green'}`}
+                          >
                             {b.status === 'inactive' ? 'Inactive' : 'Active'}
                           </span>
                         </Link>
@@ -416,20 +533,35 @@ const AdminDashboard = () => {
               <section className="n-card p-5">
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-sm font-semibold">Students</h2>
-                  <Link to="/admin/students" className="text-xs font-medium text-notion-muted hover:text-notion-text">View all</Link>
+                  <Link
+                    to="/admin/students"
+                    className="text-xs font-medium text-notion-muted hover:text-notion-text"
+                  >
+                    View all
+                  </Link>
                 </div>
                 {students.length === 0 ? (
                   <p className="py-6 text-center text-sm text-notion-muted">No students yet.</p>
                 ) : (
                   <ul>
                     {students.map((s) => (
-                      <li key={s.id || s._id} className="border-t border-notion-border first:border-t-0">
-                        <Link to={`/admin/students/${s.id || s._id}`} className="flex items-center gap-3 py-3">
+                      <li
+                        key={s.id || s._id}
+                        className="border-t border-notion-border first:border-t-0"
+                      >
+                        <Link
+                          to={`/admin/students/${s.id || s._id}`}
+                          className="flex items-center gap-3 py-3"
+                        >
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-medium">{s.fullName}</p>
-                            <p className="truncate text-xs text-notion-muted">{s.registrationNumber || s.program || s.email}</p>
+                            <p className="truncate text-xs text-notion-muted">
+                              {s.registrationNumber || s.program || s.email}
+                            </p>
                           </div>
-                          <span className={`n-tag ${s.dateSheetSaved ? 'bg-notion-green-soft text-notion-green' : 'bg-notion-yellow-soft text-notion-yellow'}`}>
+                          <span
+                            className={`n-tag ${s.dateSheetSaved ? 'bg-notion-green-soft text-notion-green' : 'bg-notion-yellow-soft text-notion-yellow'}`}
+                          >
                             {s.dateSheetSaved ? 'Saved' : 'Open'}
                           </span>
                         </Link>

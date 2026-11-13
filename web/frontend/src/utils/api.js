@@ -69,10 +69,12 @@ export const adminAPI = {
   createStudent: (data) => api.post('/api/admin/students', data),
   ocrCnic: (formData) =>
     api.post('/api/admin/students/ocr-cnic', formData, {
-      transformRequest: [(data, headers) => {
-        delete headers['Content-Type'];
-        return data;
-      }],
+      transformRequest: [
+        (data, headers) => {
+          delete headers['Content-Type'];
+          return data;
+        },
+      ],
     }),
   getStudent: (id) => api.get(`/api/admin/students/${id}`),
   updateStudent: (id, data) => api.put(`/api/admin/students/${id}`, data),
@@ -81,10 +83,12 @@ export const adminAPI = {
   sendStudentPasswords: (data) => api.post('/api/admin/students/send-passwords', data || {}),
   previewImport: (kind, formData) =>
     api.post(`/api/admin/import/${kind}/preview`, formData, {
-      transformRequest: [(data, headers) => {
-        delete headers['Content-Type'];
-        return data;
-      }],
+      transformRequest: [
+        (data, headers) => {
+          delete headers['Content-Type'];
+          return data;
+        },
+      ],
     }),
   commitImport: (kind, data) => api.post(`/api/admin/import/${kind}/commit`, data),
 

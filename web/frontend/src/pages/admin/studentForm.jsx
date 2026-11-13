@@ -10,9 +10,31 @@ import { useGuide, useWarn } from '../../components/GuideModal';
 import { cnicError, formatCnic, phoneError, semesterError } from '../../utils/validators';
 import { Loader2, ScanLine } from 'lucide-react';
 
-const emptyPersonal = { fullName: '', email: '', phone: '', cnic: '', dob: '', gender: '', address: '' };
-const emptyParent = { fatherName: '', parentCnic: '', parentOccupation: '', parentContact: '', emergencyContact: '' };
-const emptyAcademic = { registrationNumber: '', program: '', semester: '', session: '', previousQualification: '', previousInstitute: '', previousMarks: '' };
+const emptyPersonal = {
+  fullName: '',
+  email: '',
+  phone: '',
+  cnic: '',
+  dob: '',
+  gender: '',
+  address: '',
+};
+const emptyParent = {
+  fatherName: '',
+  parentCnic: '',
+  parentOccupation: '',
+  parentContact: '',
+  emergencyContact: '',
+};
+const emptyAcademic = {
+  registrationNumber: '',
+  program: '',
+  semester: '',
+  session: '',
+  previousQualification: '',
+  previousInstitute: '',
+  previousMarks: '',
+};
 
 const AdminStudentForm = () => {
   const { id } = useParams();
@@ -70,7 +92,9 @@ const AdminStudentForm = () => {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id, isEdit, navigate]);
 
   const setP = (k, v) => setPersonal((p) => ({ ...p, [k]: v }));
@@ -112,7 +136,7 @@ const AdminStudentForm = () => {
     setSaving(true);
     try {
       if (isEdit) {
-        const { email, ...personalRest } = personal;
+        const { email: _email, ...personalRest } = personal;
         await adminAPI.updateStudent(id, { ...personalRest, ...parent, ...academic });
         say({ title: 'Done', body: 'Student updated', action: 'OK' });
         navigate(`/admin/students/${id}`);
@@ -126,7 +150,9 @@ const AdminStudentForm = () => {
         navigate('/admin/students');
       }
     } catch (err) {
-      const msg = err.response?.data?.message || (isEdit ? 'Failed to update student' : 'Failed to create student');
+      const msg =
+        err.response?.data?.message ||
+        (isEdit ? 'Failed to update student' : 'Failed to create student');
       if (/email/i.test(msg)) setTab('personal');
       else if (/registration/i.test(msg)) setTab('academic');
       warn(msg);
@@ -179,7 +205,11 @@ const AdminStudentForm = () => {
         parentCnic: formatCnic(fields.cnic || p.parentCnic),
       }));
       setTab('parent');
-      say({ title: 'Done', body: 'Parent CNIC fields autofilled — review before saving', action: 'OK' });
+      say({
+        title: 'Done',
+        body: 'Parent CNIC fields autofilled — review before saving',
+        action: 'OK',
+      });
     } catch (err) {
       warn(err.response?.data?.message || 'Parent CNIC OCR failed');
     } finally {
@@ -278,27 +308,71 @@ const AdminStudentForm = () => {
                   <span className="text-sm text-notion-muted">Autofill from CNIC image</span>
                   <label className="n-btn-secondary cursor-pointer text-xs">
                     {ocrLoading ? <Loader2 size={14} className="animate-spin" /> : 'Upload CNIC'}
-                    <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" disabled={ocrLoading} onChange={handleCnicUpload} />
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      disabled={ocrLoading}
+                      onChange={handleCnicUpload}
+                    />
                   </label>
                 </div>
-                <div><label className="n-label">Full Name *</label><input value={personal.fullName} onChange={(e) => setP('fullName', e.target.value)} className="n-input" /></div>
+                <div>
+                  <label className="n-label">Full Name *</label>
+                  <input
+                    value={personal.fullName}
+                    onChange={(e) => setP('fullName', e.target.value)}
+                    className="n-input"
+                  />
+                </div>
                 <div>
                   <label className="n-label">Email {isEdit ? '' : '*'}</label>
-                  <input type="email" value={personal.email} onChange={(e) => setP('email', e.target.value)} className="n-input" disabled={isEdit} />
+                  <input
+                    type="email"
+                    value={personal.email}
+                    onChange={(e) => setP('email', e.target.value)}
+                    className="n-input"
+                    disabled={isEdit}
+                  />
                 </div>
-                <div><label className="n-label">Phone</label><PhoneInput value={personal.phone} onChange={(v) => setP('phone', v)} /></div>
-                <div><label className="n-label">CNIC</label><CnicInput value={personal.cnic} onChange={(v) => setP('cnic', v)} /></div>
-                <div><label className="n-label">Date of Birth</label><input type="date" value={personal.dob} onChange={(e) => setP('dob', e.target.value)} className="n-input" /></div>
+                <div>
+                  <label className="n-label">Phone</label>
+                  <PhoneInput value={personal.phone} onChange={(v) => setP('phone', v)} />
+                </div>
+                <div>
+                  <label className="n-label">CNIC</label>
+                  <CnicInput value={personal.cnic} onChange={(v) => setP('cnic', v)} />
+                </div>
+                <div>
+                  <label className="n-label">Date of Birth</label>
+                  <input
+                    type="date"
+                    value={personal.dob}
+                    onChange={(e) => setP('dob', e.target.value)}
+                    className="n-input"
+                  />
+                </div>
                 <div>
                   <label className="n-label">Gender</label>
-                  <select value={personal.gender} onChange={(e) => setP('gender', e.target.value)} className="n-input">
+                  <select
+                    value={personal.gender}
+                    onChange={(e) => setP('gender', e.target.value)}
+                    className="n-input"
+                  >
                     <option value="">Select</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                     <option value="Other">Other</option>
                   </select>
                 </div>
-                <div className="sm:col-span-2"><label className="n-label">Address</label><input value={personal.address} onChange={(e) => setP('address', e.target.value)} className="n-input" /></div>
+                <div className="sm:col-span-2">
+                  <label className="n-label">Address</label>
+                  <input
+                    value={personal.address}
+                    onChange={(e) => setP('address', e.target.value)}
+                    className="n-input"
+                  />
+                </div>
               </div>
             )}
             {tab === 'parent' && (
@@ -307,36 +381,130 @@ const AdminStudentForm = () => {
                   <ScanLine size={16} className="text-notion-muted" />
                   <span className="text-sm text-notion-muted">Autofill from parent CNIC image</span>
                   <label className="n-btn-secondary cursor-pointer text-xs">
-                    {parentOcrLoading ? <Loader2 size={14} className="animate-spin" /> : 'Upload Parent CNIC'}
-                    <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" disabled={parentOcrLoading} onChange={handleParentCnicUpload} />
+                    {parentOcrLoading ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      'Upload Parent CNIC'
+                    )}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      disabled={parentOcrLoading}
+                      onChange={handleParentCnicUpload}
+                    />
                   </label>
                 </div>
-                <div><label className="n-label">Father&apos;s Name</label><input value={parent.fatherName} onChange={(e) => setPr('fatherName', e.target.value)} className="n-input" /></div>
-                <div><label className="n-label">Parent CNIC</label><CnicInput value={parent.parentCnic} onChange={(v) => setPr('parentCnic', v)} /></div>
-                <div><label className="n-label">Occupation</label><input value={parent.parentOccupation} onChange={(e) => setPr('parentOccupation', e.target.value)} className="n-input" /></div>
-                <div><label className="n-label">Parent Contact</label><PhoneInput value={parent.parentContact} onChange={(v) => setPr('parentContact', v)} /></div>
-                <div className="sm:col-span-2"><label className="n-label">Emergency Contact</label><PhoneInput value={parent.emergencyContact} onChange={(v) => setPr('emergencyContact', v)} /></div>
+                <div>
+                  <label className="n-label">Father&apos;s Name</label>
+                  <input
+                    value={parent.fatherName}
+                    onChange={(e) => setPr('fatherName', e.target.value)}
+                    className="n-input"
+                  />
+                </div>
+                <div>
+                  <label className="n-label">Parent CNIC</label>
+                  <CnicInput value={parent.parentCnic} onChange={(v) => setPr('parentCnic', v)} />
+                </div>
+                <div>
+                  <label className="n-label">Occupation</label>
+                  <input
+                    value={parent.parentOccupation}
+                    onChange={(e) => setPr('parentOccupation', e.target.value)}
+                    className="n-input"
+                  />
+                </div>
+                <div>
+                  <label className="n-label">Parent Contact</label>
+                  <PhoneInput
+                    value={parent.parentContact}
+                    onChange={(v) => setPr('parentContact', v)}
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="n-label">Emergency Contact</label>
+                  <PhoneInput
+                    value={parent.emergencyContact}
+                    onChange={(v) => setPr('emergencyContact', v)}
+                  />
+                </div>
               </div>
             )}
             {tab === 'academic' && (
               <div className="grid gap-4 sm:grid-cols-2">
-                <div><label className="n-label">Registration Number *</label><input value={academic.registrationNumber} onChange={(e) => setA('registrationNumber', e.target.value)} className="n-input" disabled={isEdit} placeholder="e.g. FA20-BCS-001" /></div>
-                <div><label className="n-label">Program</label><input value={academic.program} onChange={(e) => setA('program', e.target.value)} className="n-input" placeholder="e.g. BSCS" /></div>
-                <div><label className="n-label">Semester</label><SemesterInput value={academic.semester} onChange={(v) => setA('semester', v)} /></div>
-                <div><label className="n-label">Session</label><input value={academic.session} onChange={(e) => setA('session', e.target.value)} className="n-input" placeholder="e.g. Fall 2026" /></div>
-                <div><label className="n-label">Previous Qualification</label><input value={academic.previousQualification} onChange={(e) => setA('previousQualification', e.target.value)} className="n-input" /></div>
-                <div><label className="n-label">Previous Institute</label><input value={academic.previousInstitute} onChange={(e) => setA('previousInstitute', e.target.value)} className="n-input" /></div>
-                <div><label className="n-label">Previous Marks / %</label><input value={academic.previousMarks} onChange={(e) => setA('previousMarks', e.target.value)} className="n-input" /></div>
+                <div>
+                  <label className="n-label">Registration Number *</label>
+                  <input
+                    value={academic.registrationNumber}
+                    onChange={(e) => setA('registrationNumber', e.target.value)}
+                    className="n-input"
+                    disabled={isEdit}
+                    placeholder="e.g. FA20-BCS-001"
+                  />
+                </div>
+                <div>
+                  <label className="n-label">Program</label>
+                  <input
+                    value={academic.program}
+                    onChange={(e) => setA('program', e.target.value)}
+                    className="n-input"
+                    placeholder="e.g. BSCS"
+                  />
+                </div>
+                <div>
+                  <label className="n-label">Semester</label>
+                  <SemesterInput value={academic.semester} onChange={(v) => setA('semester', v)} />
+                </div>
+                <div>
+                  <label className="n-label">Session</label>
+                  <input
+                    value={academic.session}
+                    onChange={(e) => setA('session', e.target.value)}
+                    className="n-input"
+                    placeholder="e.g. Fall 2026"
+                  />
+                </div>
+                <div>
+                  <label className="n-label">Previous Qualification</label>
+                  <input
+                    value={academic.previousQualification}
+                    onChange={(e) => setA('previousQualification', e.target.value)}
+                    className="n-input"
+                  />
+                </div>
+                <div>
+                  <label className="n-label">Previous Institute</label>
+                  <input
+                    value={academic.previousInstitute}
+                    onChange={(e) => setA('previousInstitute', e.target.value)}
+                    className="n-input"
+                  />
+                </div>
+                <div>
+                  <label className="n-label">Previous Marks / %</label>
+                  <input
+                    value={academic.previousMarks}
+                    onChange={(e) => setA('previousMarks', e.target.value)}
+                    className="n-input"
+                  />
+                </div>
               </div>
             )}
             <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
-              <button type="button" onClick={() => navigate(backTo)} className="n-btn-secondary">Cancel</button>
+              <button type="button" onClick={() => navigate(backTo)} className="n-btn-secondary">
+                Cancel
+              </button>
               <div className="flex flex-wrap gap-2">
                 {!isFirst && (
-                  <button type="button" onClick={goBack} className="n-btn-secondary">Back</button>
+                  <button type="button" onClick={goBack} className="n-btn-secondary">
+                    Back
+                  </button>
                 )}
                 {!isLast ? (
-                  <button key="next-step" type="button" onClick={goNext} className="n-btn">Next</button>
+                  <button key="next-step" type="button" onClick={goNext} className="n-btn">
+                    Next
+                  </button>
                 ) : (
                   <button
                     key="add-student"
@@ -345,9 +513,13 @@ const AdminStudentForm = () => {
                     onClick={handleSave}
                     className="n-btn"
                   >
-                    {saving
-                      ? <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                      : isEdit ? 'Save Changes' : 'Add Student'}
+                    {saving ? (
+                      <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    ) : isEdit ? (
+                      'Save Changes'
+                    ) : (
+                      'Add Student'
+                    )}
                   </button>
                 )}
               </div>

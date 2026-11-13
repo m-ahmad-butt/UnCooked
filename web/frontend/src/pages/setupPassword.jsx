@@ -25,7 +25,11 @@ const SetupPasswordPage = () => {
     setLoading(true);
     try {
       await authAPI.setupPassword({ token, password });
-      say({ title: 'Password Set', body: 'Password set successfully! Please sign in.', action: 'OK' });
+      say({
+        title: 'Password Set',
+        body: 'Password set successfully! Please sign in.',
+        action: 'OK',
+      });
       navigate('/login');
     } catch (err) {
       warn(err.response?.data?.message || 'Failed to set password');
@@ -45,7 +49,9 @@ const SetupPasswordPage = () => {
             <KeyRound size={24} className="text-notion-text" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight">Set Your Password</h1>
-          <p className="mt-1 text-sm text-notion-muted">Create a secure password for your account</p>
+          <p className="mt-1 text-sm text-notion-muted">
+            Create a secure password for your account
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -97,7 +103,9 @@ const SetupPasswordPage = () => {
 
         <p className="mt-6 text-center text-xs text-notion-muted">
           Already have an account?{' '}
-          <Link to="/login" className="font-medium text-notion-text hover:underline">Sign in</Link>
+          <Link to="/login" className="font-medium text-notion-text hover:underline">
+            Sign in
+          </Link>
         </p>
       </div>
     </div>

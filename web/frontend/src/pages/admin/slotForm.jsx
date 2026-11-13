@@ -45,14 +45,17 @@ const AdminSlotForm = () => {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id, isEdit, navigate]);
 
   const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!form.courseId || !form.date || !form.startTime || !form.endTime) return warn('All fields are required');
+    if (!form.courseId || !form.date || !form.startTime || !form.endTime)
+      return warn('All fields are required');
     setSaving(true);
     try {
       if (isEdit) {
@@ -81,21 +84,74 @@ const AdminSlotForm = () => {
         <form onSubmit={handleSave} className="space-y-5">
           <div>
             <label className="n-label">Course *</label>
-            <select value={form.courseId} onChange={(e) => set('courseId', e.target.value)} className="n-input">
+            <select
+              value={form.courseId}
+              onChange={(e) => set('courseId', e.target.value)}
+              className="n-input"
+            >
               <option value="">Select course…</option>
-              {courses.map((c) => <option key={c.id || c._id} value={c.id || c._id}>{c.courseCode} — {c.title}</option>)}
+              {courses.map((c) => (
+                <option key={c.id || c._id} value={c.id || c._id}>
+                  {c.courseCode} — {c.title}
+                </option>
+              ))}
             </select>
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
-            <div><label className="n-label">Date *</label><input type="date" value={form.date} onChange={(e) => set('date', e.target.value)} className="n-input" /></div>
-            <div><label className="n-label">Start Time *</label><input type="time" value={form.startTime} onChange={(e) => set('startTime', e.target.value)} className="n-input" /></div>
-            <div><label className="n-label">End Time *</label><input type="time" value={form.endTime} onChange={(e) => set('endTime', e.target.value)} className="n-input" /></div>
+            <div>
+              <label className="n-label">Date *</label>
+              <input
+                type="date"
+                value={form.date}
+                onChange={(e) => set('date', e.target.value)}
+                className="n-input"
+              />
+            </div>
+            <div>
+              <label className="n-label">Start Time *</label>
+              <input
+                type="time"
+                value={form.startTime}
+                onChange={(e) => set('startTime', e.target.value)}
+                className="n-input"
+              />
+            </div>
+            <div>
+              <label className="n-label">End Time *</label>
+              <input
+                type="time"
+                value={form.endTime}
+                onChange={(e) => set('endTime', e.target.value)}
+                className="n-input"
+              />
+            </div>
           </div>
-          <div><label className="n-label">Capacity</label><input type="number" min="1" value={form.capacity} onChange={(e) => set('capacity', Number(e.target.value))} className="n-input" /></div>
+          <div>
+            <label className="n-label">Capacity</label>
+            <input
+              type="number"
+              min="1"
+              value={form.capacity}
+              onChange={(e) => set('capacity', Number(e.target.value))}
+              className="n-input"
+            />
+          </div>
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={() => navigate('/admin/slots')} className="n-btn-secondary">Cancel</button>
+            <button
+              type="button"
+              onClick={() => navigate('/admin/slots')}
+              className="n-btn-secondary"
+            >
+              Cancel
+            </button>
             <button type="submit" disabled={saving} className="n-btn">
-              {saving ? <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : isEdit ? 'Update' : 'Create'}
+              {saving ? (
+                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              ) : isEdit ? (
+                'Update'
+              ) : (
+                'Create'
+              )}
             </button>
           </div>
         </form>

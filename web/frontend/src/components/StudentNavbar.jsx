@@ -79,7 +79,10 @@ const StudentNavbar = () => {
                 <button
                   key="agent"
                   type="button"
-                  onClick={() => { setMenuOpen(false); openAgent(); }}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    openAgent();
+                  }}
                   className={`n-btn-ghost justify-start text-sm ${agentOpen ? 'bg-notion-hover font-semibold' : 'text-notion-muted'}`}
                 >
                   <l.icon size={16} />

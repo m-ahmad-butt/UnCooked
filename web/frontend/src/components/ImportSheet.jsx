@@ -55,21 +55,33 @@ const ImportSheet = ({ kind, onClose, onDone }) => {
     }
   };
 
-  const headers = kind === 'students'
-    ? ['Name', 'Roll', 'Discipline', 'Email', 'Password', 'Semester', 'Branch']
-    : kind === 'branches'
-      ? ['Name', 'Code', 'City', 'Status']
-      : kind === 'courses'
-        ? ['Code', 'Title', 'Credits', 'Department', 'Level']
-        : kind === 'registrations'
-          ? ['Student', 'Email', 'Roll', 'Course', 'Title']
-          : ['Course', 'Date', 'Start', 'End', 'Capacity'];
+  const headers =
+    kind === 'students'
+      ? ['Name', 'Roll', 'Discipline', 'Email', 'Password', 'Semester', 'Branch']
+      : kind === 'branches'
+        ? ['Name', 'Code', 'City', 'Status']
+        : kind === 'courses'
+          ? ['Code', 'Title', 'Credits', 'Department', 'Level']
+          : kind === 'registrations'
+            ? ['Student', 'Email', 'Roll', 'Course', 'Title']
+            : ['Course', 'Date', 'Start', 'End', 'Capacity'];
 
   const cells = (row) => {
-    if (kind === 'students') return [row.fullName, row.registrationNumber, row.program, row.email, row.password, row.semester, row.branchName || row.branch];
+    if (kind === 'students')
+      return [
+        row.fullName,
+        row.registrationNumber,
+        row.program,
+        row.email,
+        row.password,
+        row.semester,
+        row.branchName || row.branch,
+      ];
     if (kind === 'branches') return [row.name, row.code, row.city, row.status];
-    if (kind === 'courses') return [row.courseCode, row.title, row.creditHours, row.department, row.difficulty];
-    if (kind === 'registrations') return [row.studentName, row.email, row.registrationNumber, row.courseCode, row.title];
+    if (kind === 'courses')
+      return [row.courseCode, row.title, row.creditHours, row.department, row.difficulty];
+    if (kind === 'registrations')
+      return [row.studentName, row.email, row.registrationNumber, row.courseCode, row.title];
     return [row.courseCode, row.date, row.startTime, row.endTime, row.capacity];
   };
 
@@ -81,31 +93,52 @@ const ImportSheet = ({ kind, onClose, onDone }) => {
             <h2 className="text-base font-semibold">Upload {TITLES[kind] || kind}</h2>
             <p className="text-xs text-notion-muted">{HINTS[kind]}. CSV or Excel.</p>
           </div>
-          <button type="button" onClick={onClose} className="n-btn-ghost p-2"><X size={16} /></button>
+          <button type="button" onClick={onClose} className="n-btn-ghost p-2">
+            <X size={16} />
+          </button>
         </div>
 
         <div className="flex-1 overflow-auto px-5 py-4">
           {!rows ? (
             <label className="flex cursor-pointer flex-col items-center justify-center rounded-notion-lg border border-dashed border-notion-border bg-notion-surface px-6 py-12 text-sm text-notion-muted">
-              {reading ? <Loader2 size={20} className="mb-2 animate-spin" /> : <Upload size={20} className="mb-2" />}
+              {reading ? (
+                <Loader2 size={20} className="mb-2 animate-spin" />
+              ) : (
+                <Upload size={20} className="mb-2" />
+              )}
               {reading ? 'Reading file…' : 'Choose a CSV or XLSX file'}
-              <input type="file" accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" className="hidden" onChange={onFile} />
+              <input
+                type="file"
+                accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                className="hidden"
+                onChange={onFile}
+              />
             </label>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[640px]">
                 <thead>
                   <tr className="bg-notion-surface">
-                    {headers.map((header) => <th key={header} className="n-th">{header}</th>)}
+                    {headers.map((header) => (
+                      <th key={header} className="n-th">
+                        {header}
+                      </th>
+                    ))}
                     <th className="n-th">Check</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rows.map((row) => (
                     <tr key={row.index}>
-                      {cells(row).map((value, i) => <td key={i} className="n-td">{value || 'Not set'}</td>)}
-                      <td className={`n-td text-xs ${row.ok ? 'text-notion-green' : 'text-notion-red'}`}>
-                        {row.ok ? (row.message || 'Ready') : row.message}
+                      {cells(row).map((value, i) => (
+                        <td key={i} className="n-td">
+                          {value || 'Not set'}
+                        </td>
+                      ))}
+                      <td
+                        className={`n-td text-xs ${row.ok ? 'text-notion-green' : 'text-notion-red'}`}
+                      >
+                        {row.ok ? row.message || 'Ready' : row.message}
                       </td>
                     </tr>
                   ))}
@@ -116,8 +149,14 @@ const ImportSheet = ({ kind, onClose, onDone }) => {
         </div>
 
         <div className="flex justify-end gap-2 border-t border-notion-border px-5 py-4">
-          {rows && <button type="button" onClick={() => setRows(null)} className="n-btn-secondary">Choose another file</button>}
-          <button type="button" onClick={onClose} className="n-btn-ghost">Cancel</button>
+          {rows && (
+            <button type="button" onClick={() => setRows(null)} className="n-btn-secondary">
+              Choose another file
+            </button>
+          )}
+          <button type="button" onClick={onClose} className="n-btn-ghost">
+            Cancel
+          </button>
           <button type="button" onClick={confirm} disabled={!rows || saving} className="n-btn">
             {saving ? <Loader2 size={16} className="animate-spin" /> : null}
             Confirm and add

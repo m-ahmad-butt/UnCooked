@@ -1,6 +1,14 @@
 import { formatCnic } from '../utils/validators';
 
-const CnicInput = ({ value, onChange, className = 'n-input', placeholder = '35201-9565409-1', disabled = false, id, name }) => (
+const CnicInput = ({
+  value,
+  onChange,
+  className = 'n-input',
+  placeholder = '35201-9565409-1',
+  disabled = false,
+  id,
+  name,
+}) => (
   <input
     id={id}
     name={name}

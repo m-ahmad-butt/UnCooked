@@ -5,12 +5,7 @@ import { Link } from 'react-router-dom';
  */
 const BrandLogo = ({ to = '/', className = '', imgClassName = 'h-8 w-auto' }) => {
   const img = (
-    <img
-      src="/logo.png"
-      alt=""
-      className={`${imgClassName} object-contain`}
-      draggable={false}
-    />
+    <img src="/logo.png" alt="" className={`${imgClassName} object-contain`} draggable={false} />
   );
 
   if (!to) {

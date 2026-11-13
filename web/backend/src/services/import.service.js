@@ -1,126 +1,36 @@
-const XLSX = require('xlsx');
+const ExcelJS = require('exceljs');
 const bcrypt = require('bcryptjs');
 const { User, Branch, Course, ExamSlot, CourseAssignment } = require('../models');
+const {
+  cellText,
+  makePassword,
+  previewRow,
+} = require('./importHelpers');
 
 const KINDS = ['branches', 'courses', 'students', 'slots', 'registrations'];
 
-const keyOf = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-
-const pick = (row, names) => {
-  const wanted = new Set(names.map(keyOf));
-  for (const [key, value] of Object.entries(row)) {
-    if (wanted.has(keyOf(key))) return String(value ?? '').trim();
-  }
-  return '';
-};
-
-const makePassword = () => {
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
-  let out = 'Vu';
-  for (let i = 0; i < 6; i += 1) out += alphabet[Math.floor(Math.random() * alphabet.length)];
-  return out;
-};
-
-const parseSheet = (buffer) => {
-  const book = XLSX.read(buffer, { type: 'buffer', cellDates: true });
-  const sheet = book.Sheets[book.SheetNames[0]];
+const parseSheet = async (buffer) => {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer);
+  const sheet = workbook.worksheets[0];
   if (!sheet) return [];
-  return XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false });
-};
 
-const difficultyOf = (value) => {
-  const v = String(value || '').trim().toLowerCase();
-  if (v === 'easy' || v === 'medium' || v === 'hard') return v;
-  return 'medium';
-};
-
-const statusOf = (value, fallback = 'active') => {
-  const v = String(value || '').trim().toLowerCase();
-  if (v === 'inactive' || v === 'disabled') return 'inactive';
-  if (v === 'active' || v === 'enabled') return 'active';
-  return fallback;
-};
-
-const previewRow = (kind, raw) => {
-  if (kind === 'branches') {
-    const row = {
-      name: pick(raw, ['name', 'branch', 'branchname']),
-      code: pick(raw, ['code', 'branchcode']).toUpperCase(),
-      city: pick(raw, ['city']),
-      address: pick(raw, ['address']),
-      contactNumber: pick(raw, ['contact', 'contactnumber', 'phone']),
-      status: statusOf(pick(raw, ['status'])),
-    };
-    const issues = [];
-    if (!row.name) issues.push('Name is required');
-    if (!row.code) issues.push('Code is required');
-    return { ...row, ok: issues.length === 0, message: issues.join('. ') };
-  }
-
-  if (kind === 'courses') {
-    const credits = pick(raw, ['credithours', 'credits', 'credit']);
-    const row = {
-      courseCode: pick(raw, ['coursecode', 'code']).toUpperCase(),
-      title: pick(raw, ['title', 'name', 'course']),
-      creditHours: credits || '3',
-      department: pick(raw, ['department', 'discipline']),
-      difficulty: difficultyOf(pick(raw, ['difficulty', 'level'])),
-      status: statusOf(pick(raw, ['status'])),
-    };
-    const issues = [];
-    if (!row.courseCode) issues.push('Course code is required');
-    if (!row.title) issues.push('Title is required');
-    if (!Number(row.creditHours)) issues.push('Credit hours must be a number');
-    return { ...row, ok: issues.length === 0, message: issues.join('. ') };
-  }
-
-  if (kind === 'students') {
-    const given = pick(raw, ['password', 'pass']);
-    const row = {
-      fullName: pick(raw, ['name', 'fullname', 'student']),
-      registrationNumber: pick(raw, ['roll', 'rollno', 'registrationnumber', 'regno']),
-      program: pick(raw, ['discipline', 'program', 'degree']),
-      semester: pick(raw, ['semester', 'sem']),
-      branch: pick(raw, ['branch', 'branchcode', 'centre', 'center']),
-      email: pick(raw, ['email', 'mail']).toLowerCase(),
-      password: given || makePassword(),
-    };
-    const issues = [];
-    if (!row.fullName) issues.push('Name is required');
-    if (!row.email || !row.email.includes('@')) issues.push('A valid email is required');
-    if (!row.registrationNumber) issues.push('Roll number is required');
-    if (row.password.length < 4) issues.push('Password must be at least 4 characters');
-    return { ...row, ok: issues.length === 0, message: issues.join('. ') };
-  }
-
-  if (kind === 'registrations') {
-    const row = {
-      studentName: pick(raw, ['student', 'name', 'fullname']),
-      email: pick(raw, ['email', 'mail']).toLowerCase(),
-      registrationNumber: pick(raw, ['roll', 'rollno', 'registrationnumber', 'regno']),
-      courseCode: pick(raw, ['coursecode', 'code']).toUpperCase(),
-      title: pick(raw, ['title', 'course']),
-    };
-    const issues = [];
-    if (!row.email && !row.registrationNumber) issues.push('Email or roll is required');
-    if (!row.courseCode) issues.push('Course code is required');
-    return { ...row, ok: issues.length === 0, message: issues.join('. ') };
-  }
-
-  const row = {
-    courseCode: pick(raw, ['coursecode', 'course', 'code']).toUpperCase(),
-    date: pick(raw, ['date']),
-    startTime: pick(raw, ['starttime', 'start', 'time']),
-    endTime: pick(raw, ['endtime', 'end']),
-    capacity: pick(raw, ['capacity', 'seats']) || '30',
-  };
-  const issues = [];
-  if (!row.courseCode) issues.push('Course code is required');
-  if (!row.date || Number.isNaN(new Date(row.date).getTime())) issues.push('A valid date is required');
-  if (!row.startTime) issues.push('Start time is required');
-  if (row.endTime && row.endTime <= row.startTime) issues.push('End time must be after start time');
-  if (!Number(row.capacity) || Number(row.capacity) < 1) issues.push('Capacity must be at least 1');
-  return { ...row, ok: issues.length === 0, message: issues.join('. ') };
+  const headers = [];
+  const rows = [];
+  sheet.eachRow((row, rowNumber) => {
+    const values = row.values || [];
+    if (rowNumber === 1) {
+      for (let i = 1; i < values.length; i += 1) headers[i] = cellText(values[i]);
+      return;
+    }
+    const obj = {};
+    for (let i = 1; i < values.length; i += 1) {
+      const header = headers[i] || `col${i}`;
+      obj[header] = cellText(values[i]);
+    }
+    rows.push(obj);
+  });
+  return rows;
 };
 
 const findBranch = (value) => {
@@ -138,7 +48,7 @@ const previewImport = async (kind, buffer) => {
     error.status = 400;
     throw error;
   }
-  const rawRows = parseSheet(buffer);
+  const rawRows = await parseSheet(buffer);
   if (!rawRows.length) {
     const error = new Error('The file has no data rows');
     error.status = 400;
@@ -411,4 +321,9 @@ const commitImport = async (kind, rows) => {
 
 const issueStudentPassword = () => makePassword();
 
-module.exports = { previewImport, commitImport, issueStudentPassword, KINDS };
+module.exports = {
+  previewImport,
+  commitImport,
+  issueStudentPassword,
+  KINDS,
+};

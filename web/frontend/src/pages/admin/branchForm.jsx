@@ -44,7 +44,9 @@ const AdminBranchForm = () => {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id, isEdit, navigate]);
 
   const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
@@ -81,23 +83,70 @@ const AdminBranchForm = () => {
       >
         <form onSubmit={handleSave} className="space-y-5">
           <div className="grid gap-4 sm:grid-cols-2">
-            <div><label className="n-label">Name *</label><input value={form.name} onChange={(e) => set('name', e.target.value)} className="n-input" /></div>
-            <div><label className="n-label">Code *</label><input value={form.code} onChange={(e) => set('code', e.target.value)} className="n-input" /></div>
-            <div><label className="n-label">City *</label><input value={form.city} onChange={(e) => set('city', e.target.value)} className="n-input" /></div>
-            <div><label className="n-label">Contact Number</label><PhoneInput value={form.contactNumber} onChange={(v) => set('contactNumber', v)} /></div>
+            <div>
+              <label className="n-label">Name *</label>
+              <input
+                value={form.name}
+                onChange={(e) => set('name', e.target.value)}
+                className="n-input"
+              />
+            </div>
+            <div>
+              <label className="n-label">Code *</label>
+              <input
+                value={form.code}
+                onChange={(e) => set('code', e.target.value)}
+                className="n-input"
+              />
+            </div>
+            <div>
+              <label className="n-label">City *</label>
+              <input
+                value={form.city}
+                onChange={(e) => set('city', e.target.value)}
+                className="n-input"
+              />
+            </div>
+            <div>
+              <label className="n-label">Contact Number</label>
+              <PhoneInput value={form.contactNumber} onChange={(v) => set('contactNumber', v)} />
+            </div>
           </div>
-          <div><label className="n-label">Address</label><input value={form.address} onChange={(e) => set('address', e.target.value)} className="n-input" /></div>
+          <div>
+            <label className="n-label">Address</label>
+            <input
+              value={form.address}
+              onChange={(e) => set('address', e.target.value)}
+              className="n-input"
+            />
+          </div>
           <div>
             <label className="n-label">Status</label>
-            <select value={form.status} onChange={(e) => set('status', e.target.value)} className="n-input">
+            <select
+              value={form.status}
+              onChange={(e) => set('status', e.target.value)}
+              className="n-input"
+            >
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={() => navigate('/admin/branches')} className="n-btn-secondary">Cancel</button>
+            <button
+              type="button"
+              onClick={() => navigate('/admin/branches')}
+              className="n-btn-secondary"
+            >
+              Cancel
+            </button>
             <button type="submit" disabled={saving} className="n-btn">
-              {saving ? <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : isEdit ? 'Update' : 'Create'}
+              {saving ? (
+                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              ) : isEdit ? (
+                'Update'
+              ) : (
+                'Create'
+              )}
             </button>
           </div>
         </form>

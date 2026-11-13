@@ -14,8 +14,14 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
       let start = Math.max(2, page - 1);
       let end = Math.min(totalPages - 1, page + 1);
 
-      if (page <= 3) { start = 2; end = 4; }
-      if (page >= totalPages - 2) { start = totalPages - 3; end = totalPages - 1; }
+      if (page <= 3) {
+        start = 2;
+        end = 4;
+      }
+      if (page >= totalPages - 2) {
+        start = totalPages - 3;
+        end = totalPages - 1;
+      }
 
       if (start > 2) pages.push('...');
       for (let i = start; i <= end; i++) pages.push(i);
@@ -37,7 +43,9 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
 
       {getPages().map((p, i) =>
         p === '...' ? (
-          <span key={`e${i}`} className="px-2 text-sm text-notion-muted">…</span>
+          <span key={`e${i}`} className="px-2 text-sm text-notion-muted">
+            …
+          </span>
         ) : (
           <button
             key={p}
