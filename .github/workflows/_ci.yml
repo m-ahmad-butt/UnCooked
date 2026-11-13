@@ -47,7 +47,7 @@ jobs:
       inputs.action == 'pipeline-staging'
     runs-on: [self-hosted, web-staging]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Materialize env secrets
         env:
           BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
@@ -70,7 +70,7 @@ jobs:
       inputs.action == 'pipeline-staging'
     runs-on: [self-hosted, web-staging]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Materialize env secrets
         env:
           BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
@@ -94,7 +94,7 @@ jobs:
       inputs.action == 'pipeline-staging'
     runs-on: [self-hosted, web-staging]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Materialize env secrets
         env:
           BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
@@ -122,7 +122,7 @@ jobs:
     env:
       COMPOSE_PROJECT_NAME: web-comp-ci
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Materialize env secrets
         env:
           BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
@@ -149,7 +149,7 @@ jobs:
     env:
       COMPOSE_PROJECT_NAME: web-comp-ci
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Materialize env secrets
         env:
           BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
@@ -232,7 +232,7 @@ jobs:
       COMPOSE_PROJECT_NAME: web-comp-stage
       DEPLOY_DIR: /opt/web-comp-stage
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Materialize env secrets
         env:
           BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
@@ -258,7 +258,7 @@ jobs:
       COMPOSE_PROJECT_NAME: web-comp
       DEPLOY_DIR: /opt/web-comp
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Materialize env secrets
         env:
           BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
@@ -284,7 +284,7 @@ jobs:
       CERTBOT_EMAIL: ${{ secrets.CERTBOT_EMAIL }}
       DUCKDNS_TOKEN: ${{ secrets.DUCKDNS_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Materialize env secrets
         env:
           BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
@@ -312,7 +312,7 @@ jobs:
       CERTBOT_EMAIL: ${{ secrets.CERTBOT_EMAIL }}
       DUCKDNS_TOKEN: ${{ secrets.DUCKDNS_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Materialize env secrets
         env:
           BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
@@ -336,7 +336,7 @@ jobs:
       COMPOSE_PROJECT_NAME: web-comp-stage
       DEPLOY_DIR: /opt/web-comp-stage
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Materialize env secrets
         env:
           BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
@@ -362,7 +362,7 @@ jobs:
       COMPOSE_PROJECT_NAME: web-comp
       DEPLOY_DIR: /opt/web-comp
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Materialize env secrets
         env:
           BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
@@ -386,7 +386,7 @@ jobs:
       COMPOSE_PROJECT_NAME: web-comp-stage
       DEPLOY_DIR: /opt/web-comp-stage
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Materialize env secrets
         env:
           BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
@@ -412,7 +412,7 @@ jobs:
       COMPOSE_PROJECT_NAME: web-comp
       DEPLOY_DIR: /opt/web-comp
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Materialize env secrets
         env:
           BACKEND_ENV_CONTENT: ${{ secrets.BACKEND_ENV }}
