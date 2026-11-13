@@ -181,6 +181,17 @@ Commit message (push yourself):
   fix(ci): clear frontend Snyk high and Sonar new-code gate
 
 
+11) Snyk frontend — Open Redirect High (react-router)
+Issue:
+  SNYK-JS-REACTROUTER-18313144 Open Redirect [HIGH] in react-router@6.30.6
+  via react-router-dom@6.30.6. No fix on v6; need >= 7.18.0.
+
+Fix:
+  Upgrade react-router-dom 6.30.6 → 7.18.5 (lint + build OK; npm audit 0).
+
+Commit message (push yourself):
+  fix(deps): upgrade react-router-dom to 7.18.5 for Snyk high
+
+
 Accepted (not fail-threshold): see SECURITY.md
   exceljs -> uuid     Moderate  no non-breaking fix
-  react-router-dom   Moderate  v7 is breaking; stay on v6 for now
