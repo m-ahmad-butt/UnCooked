@@ -11,7 +11,7 @@ RUN npm run build
 
 # nginx/nginx-unprivileged:1.28.3-alpine does not exist on Hub.
 # 1.31.7-alpine is current mainline with newer nginx package fixes.
-FROM nginx/nginx-unprivileged:1.31.7-alpine
+FROM nginx/nginx-unprivileged:1.31.8-alpine
 USER root
 # hadolint ignore=DL3018
 RUN apk upgrade --no-cache
