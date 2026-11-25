@@ -13,7 +13,9 @@ http://uncooked-alb-1680261338.ap-south-1.elb.amazonaws.com
 |------|------|
 | Muhammad Ahmad Butt | 23L-3059 |
 | Ali Ahmed | 23L-3067 |
+| Saim Arif Khan | 23L-3071 |
 | Muhammad Zain Tahir | 23L-3078 |
+| Abd Ur Rehman | 23L-3105 |
 
 Branching: feature branches → PR (group reviewer) → protected `main` (CI jobs 02–10 required). No direct pushes to `main`.
 
